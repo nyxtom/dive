@@ -1,0 +1,35 @@
+{
+  "name": "dive",
+  "description": "Various standard scuba diving algorithms, formulas, calculations and device management.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/nyxtom/dive",
+  "author": {
+    "name": "Thomas Holloway",
+    "email": "nyxtom@gmail.com",
+    "url": "http://github.com/nyxtom"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nyxtom/dive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nyxtom/dive/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/nyxtom/dive/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "lib/dive",
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt": "~0.3.17"
+  },
+  "keywords": []
+}
