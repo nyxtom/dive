@@ -63,3 +63,18 @@ exports['atmToDepthInMeters'] = {
         test.done();
     }
 };
+
+exports['sac'] = {
+    setUp: function(done) {
+        done();
+    },
+    '1 atm sac rate': function(test) {
+        test.expect(2);
+        var dac = dive.dac(2500, 1300, 50);
+        test.equals(dac, 24, 'should be 24 psi/min');
+        var sac = dive.sac(dac, 10);
+        sac = Math.floor(sac);
+        test.equals(sac, 12, 'should be 12 psi/min');
+        test.done();
+    }
+};

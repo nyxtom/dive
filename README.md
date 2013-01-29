@@ -10,6 +10,7 @@ var dive = require('dive');
 dive.metersToFeet(); // 3.2808
 dive.metersToFeet(2); // 6.5616
 dive.dac(2500, 1300, 50); // 24
+dive.sac(24, 10); // 12.022841322028032
 ```
 
 ## Contributing
