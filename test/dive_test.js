@@ -20,18 +20,18 @@ var dive = require('../lib/dive.js');
     test.ifError(value)
 */
 
-exports['metersToFeet'] = {
+exports['feetToMeters'] = {
     setUp: function(done) {
         done();
     },
     'no args': function(test) {
         test.expect(1);
-        test.equal(dive.metersToFeet(), 3.2808, 'should be standard 1m -> 3.2808ft');
+        test.equal(dive.feetToMeters(), 0.3048, 'should be standard 1m -> 3.2808ft');
         test.done();
     },
     '1 arg': function(test) {
         test.expect(1);
-        test.equal(dive.metersToFeet(2), (6.5616), 'should be standard 2m -> 2 * 3.2808ft');
+        test.equal(dive.feetToMeters(33), 10.0584, 'should be standard 33ft -> 10.0584m');
         test.done();
     }
 };

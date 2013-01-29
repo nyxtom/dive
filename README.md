@@ -7,9 +7,10 @@ Install the module with: `npm install dive`
 
 ```javascript
 var dive = require('dive');
-dive.metersToFeet(); // 3.2808
-dive.metersToFeet(2); // 6.5616
+dive.feetToMeters(); // 0.3048
+dive.feetToMeters(33); // 10.0584
 dive.dac(2500, 1300, 50); // 24
+// calculate sac rate given dac rate and average depth in meters
 dive.sac(24, 10); // 12.022841322028032
 ```
 
