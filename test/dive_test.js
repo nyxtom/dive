@@ -20,15 +20,29 @@ var dive = require('../lib/dive.js');
     test.ifError(value)
 */
 
-exports['awesome'] = {
-  setUp: function(done) {
-    // setup here
-    done();
-  },
-  'no args': function(test) {
-    test.expect(1);
-    // tests here
-    test.equal(dive.awesome(), 'awesome', 'should be awesome.');
-    test.done();
-  }
+exports['metersToFeet'] = {
+    setUp: function(done) {
+        done();
+    },
+    'no args': function(test) {
+        test.expect(1);
+        test.equal(dive.metersToFeet(), 3.2808, 'should be standard 1m -> 3.2808ft');
+        test.done();
+    },
+    '1 arg': function(test) {
+        test.expect(1);
+        test.equal(dive.metersToFeet(2), (6.5616), 'should be standard 2m -> 2 * 3.2808ft');
+        test.done();
+    }
+};
+
+exports['dac'] = {
+    setUp: function(done) {
+        done();
+    },
+    'args': function(test) {
+        test.expect(1);
+        test.equal(dive.dac(2500, 1300, 50), 24, 'should be 24 psi/min')
+        test.done();
+    }
 };
