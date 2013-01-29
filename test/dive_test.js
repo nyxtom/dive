@@ -46,3 +46,20 @@ exports['dac'] = {
         test.done();
     }
 };
+
+exports['atmToDepthInMeters'] = {
+    setUp: function(done) {
+        done();
+    },
+    '10 meters': function(test) {
+        test.expect(3);
+        dive.gravitySamples.current(dive.gravitySamples.earth);
+        dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
+        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
+        var depth = dive.atmToDepthInMeters();
+        depth = Math.floor(depth);
+        test.equal(depth, 10, 'should be 10 meters equal 1atm below sea level on earth');
+        test.done();
+    }
+};
