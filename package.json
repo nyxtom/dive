@@ -26,7 +26,8 @@
     "node": ">= 0.6.0"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "travis": "grunt travis --verbose"
   },
   "devDependencies": {
     "grunt": "~0.3.17"
