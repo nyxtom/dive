@@ -12,6 +12,7 @@ dive.feetToMeters(33); // 10.0584
 dive.dac(2500, 1300, 50); // 24
 // calculate sac rate given dac rate and average depth in meters
 dive.sac(24, 10); // 12.022841322028032
+dive.rmv(25, 80, 3000); // 0.67
 ```
 
 ## Contributing
