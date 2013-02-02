@@ -38,6 +38,10 @@ dive.partialPressure(p, 0.21); // 0.42197400000000007 bar absolute
 // you can also use the helper function to calculate from depth in meters
 dive.partialPressureAtDepth(10, 0.79); // 1.5874260000000002 bar absolute
 dive.partialPressureAtDepth(10, 0.21); // 0.42197400000000007 bar absolute
+
+// calculate partial pressures for above but in salt water
+dive.partialPressureAtDepth(10, 0.79, true); // 1.5642 bar absolute
+dive.partialPressureAtDepth(10, 0.21, true); // 0.4158 bar absolute
 ```
 
 ## Contributing

@@ -272,5 +272,20 @@ exports['partialPressureAtDepth'] = {
         test.equals(ppN2, 1.59, '10 meters below with 79% nitrogen should make nitrogen at ~1.59 bar absolute');
         test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute');
         test.done();
+    },
+    'partial pressure in bar absolute for gas volume fraction in salt': function(test) {
+        test.expect(2);
+        // diving with a tank that has 79% nitrogen and 21% oxygen
+        // to 10 meters below sea level (or approximately 2 bar absolute)
+
+        var fiN2 = 0.79;
+        var fiO2 = 0.21;
+
+        var ppN2 = Math.round(dive.partialPressureAtDepth(10, fiN2, true) * 100) / 100;
+        var ppO2 = Math.round(dive.partialPressureAtDepth(10, fiO2, true) * 100) / 100;
+
+        test.equals(ppN2, 1.56, '10 meters below with 79% nitrogen should make nitrogen at ~1.56 bar absolute in salt water');
+        test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute in salt water');
+        test.done();
     }
 };
