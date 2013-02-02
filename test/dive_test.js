@@ -36,6 +36,22 @@ exports['feetToMeters'] = {
     }
 };
 
+exports['metersToFeet'] = {
+    setUp: function(done) {
+        done();
+    },
+    'no args': function(test) {
+        test.expect(1);
+        test.equal(dive.metersToFeet(), 3.28084, 'should be standard 1m -> 3.2808ft');
+        test.done();
+    },
+    '1 arg': function(test) {
+        test.expect(1);
+        test.equal(dive.metersToFeet(10), 32.8084, 'should be standard 32.8084ft -> 10m');
+        test.done();
+    }
+};
+
 exports['dac'] = {
     setUp: function(done) {
         done();
@@ -51,15 +67,137 @@ exports['atmToDepthInMeters'] = {
     setUp: function(done) {
         done();
     },
+    '10.04 meters': function(test) {
+        test.expect(3);
+        dive.gravitySamples.current(dive.gravitySamples.earth);
+        dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
+        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
+        var depth = Math.round(dive.atmToDepthInMeters() * 100) / 100;
+        test.equal(depth, 10.04, 'should be 10.04 meters equal 1atm below sea level on earth in fresh');
+        test.done();
+    },
+    '10.34 meters salt': function(test) {
+        test.expect(3);
+        dive.gravitySamples.current(dive.gravitySamples.earth);
+        dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
+        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
+        var depth = Math.round(dive.atmToDepthInMeters(1, true) * 100) / 100;
+        test.equal(depth, 10.34, 'should be 10.34 meters equal 1atm below sea level on earth in salt');
+        test.done();
+    }
+};
+
+exports['barToDepthInMeters'] = {
+    setUp: function(done) {
+        done();
+    },
+    '9.91 meters': function(test) {
+        test.expect(3);
+        dive.gravitySamples.current(dive.gravitySamples.earth);
+        dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
+        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
+        var depth = Math.round(dive.barToDepthInMeters() * 100) / 100;
+        test.equal(depth, 9.91, 'should be 9.91 meters equal 1 bars below sea level on earth in fresh');
+        test.done();
+    },
+    '10.2 meters salt': function(test) {
+        test.expect(3);
+        dive.gravitySamples.current(dive.gravitySamples.earth);
+        dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
+        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
+        var depth = Math.round(dive.barToDepthInMeters(1, true) * 100) / 100;
+        test.equal(depth, 10.2, 'should be 10.2 meters equal 1 bars below sea level on earth in salt');
+        test.done();
+    }
+};
+
+exports['depthInMetersToBars'] = {
+    setUp: function(done) {
+        done();
+    },
     '10 meters': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
-        var depth = dive.atmToDepthInMeters();
-        depth = Math.floor(depth);
-        test.equal(depth, 10, 'should be 10 meters equal 1atm below sea level on earth');
+        var bars = Math.round(dive.depthInMetersToBars(10));
+        test.equal(bars, 2, 'should be 10 meters equal 2 bars');
+        test.done();
+    }
+};
+
+exports['pascalToBar'] = {
+    setUp: function(done) {
+        done();
+    },
+    '100000 to 1 bar': function(test) {
+        test.expect(1);
+        test.equal(dive.pascalToBar(100000), 1, 'should be 1 bar to 100000 pascals');
+        test.done();
+    }
+};
+
+exports['barToPascal'] = {
+    setUp: function(done) {
+        done();
+    },
+    '100000 to 1 bar': function(test) {
+        test.expect(1);
+        test.equal(dive.barToPascal(1), 100000, 'should be 1 bar to 100000 pascals');
+        test.done();
+    }
+};
+
+exports['pascalToAtm'] = {
+    setUp: function(done) {
+        done();
+    },
+    '101325 to 1 atm': function(test) {
+        test.expect(1);
+        test.equal(dive.pascalToAtm(101325), 1, 'should be 1 atm to 101325 pascals');
+        test.done();
+    }
+};
+
+exports['atmToPascal'] = {
+    setUp: function(done) {
+        done();
+    },
+    '101325 to 1 atm': function(test) {
+        test.expect(1);
+        test.equal(dive.atmToPascal(1), 101325, 'should be 1 atm to 101325 pascals');
+        test.done();
+    }
+};
+
+exports['atmToBar'] = {
+    setUp: function(done) {
+        done();
+    },
+    '1.01325 to 1 atm': function(test) {
+        test.expect(1);
+        test.equal(dive.atmToBar(1), 1.01325, 'should be 1 atm to 1.01325 bar');
+        test.done();
+    }
+};
+
+exports['depthInMetersToAtm'] = {
+    setUp: function(done) {
+        done();
+    },
+    '10 meters': function(test) {
+        test.expect(3);
+        dive.gravitySamples.current(dive.gravitySamples.earth);
+        dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
+        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
+        var atm = Math.round(dive.depthInMetersToAtm(10));
+        test.equal(atm, 2, 'should be 10 meters equal 1atm below sea level on earth');
         test.done();
     }
 };
@@ -89,6 +227,50 @@ exports['rmv'] = {
         // diving with 80cubic feet working pressure 3000
         var rmv = Math.round(dive.rmv(sac, 80, 3000) * 100)/100;
         test.equals(rmv, 0.67, 'should be 0.67 cuft/min');
+        test.done();
+    }
+};
+
+exports['partialPressure'] = {
+    setUp: function(done) {
+        done();
+    },
+    'partial pressure in bar absolute for gas volume fraction': function(test) {
+        test.expect(3);
+        // diving with a tank that has 79% nitrogen and 21% oxygen
+        // to 10 meters below sea level (or approximately 2 bar absolute)
+
+        var barAbs = dive.depthInMetersToBars(10);
+        test.equals(Math.round(barAbs), 2, '10 meters should be about 2 bar absolute');
+        var fiN2 = 0.79;
+        var fiO2 = 0.21;
+
+        var ppN2 = Math.round(dive.partialPressure(barAbs, fiN2) * 100) / 100;
+        var ppO2 = Math.round(dive.partialPressure(barAbs, fiO2) * 100) / 100;
+
+        test.equals(ppN2, 1.59, '10 meters below with 79% nitrogen should make nitrogen at ~1.59 bar absolute');
+        test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute');
+        test.done();
+    }
+};
+
+exports['partialPressureAtDepth'] = {
+    setUp: function(done) {
+        done();
+    },
+    'partial pressure in bar absolute for gas volume fraction': function(test) {
+        test.expect(2);
+        // diving with a tank that has 79% nitrogen and 21% oxygen
+        // to 10 meters below sea level (or approximately 2 bar absolute)
+
+        var fiN2 = 0.79;
+        var fiO2 = 0.21;
+
+        var ppN2 = Math.round(dive.partialPressureAtDepth(10, fiN2) * 100) / 100;
+        var ppO2 = Math.round(dive.partialPressureAtDepth(10, fiO2) * 100) / 100;
+
+        test.equals(ppN2, 1.59, '10 meters below with 79% nitrogen should make nitrogen at ~1.59 bar absolute');
+        test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute');
         test.done();
     }
 };
