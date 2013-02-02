@@ -78,3 +78,17 @@ exports['sac'] = {
         test.done();
     }
 };
+
+exports['rmv'] = {
+    setUp: function(done) {
+        done();
+    },
+    'cubic feet per minute': function(test) {
+        test.expect(1);
+        var sac = 25; // 25 psi/min
+        // diving with 80cubic feet working pressure 3000
+        var rmv = Math.round(dive.rmv(sac, 80, 3000) * 100)/100;
+        test.equals(rmv, 0.67, 'should be 0.67 cuft/min');
+        test.done();
+    }
+};
