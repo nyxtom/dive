@@ -67,24 +67,24 @@ exports['atmToDepthInMeters'] = {
     setUp: function(done) {
         done();
     },
-    '10.04 meters': function(test) {
+    '10.03 meters': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
-        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.atmToDepthInMeters() * 100) / 100;
-        test.equal(depth, 10.04, 'should be 10.04 meters equal 1atm below sea level on earth in fresh');
+        test.equal(depth, 10.03, 'should be 10.03 meters equal 1atm below sea level on earth in fresh');
         test.done();
     },
-    '10.34 meters salt': function(test) {
+    '10.33 meters salt': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
-        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.atmToDepthInMeters(1, true) * 100) / 100;
-        test.equal(depth, 10.34, 'should be 10.34 meters equal 1atm below sea level on earth in salt');
+        test.equal(depth, 10.33, 'should be 10.33 meters equal 1atm below sea level on earth in salt');
         test.done();
     }
 };
@@ -93,21 +93,21 @@ exports['barToDepthInMeters'] = {
     setUp: function(done) {
         done();
     },
-    '9.91 meters': function(test) {
+    '9.9 meters': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
-        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.barToDepthInMeters() * 100) / 100;
-        test.equal(depth, 9.91, 'should be 9.91 meters equal 1 bars below sea level on earth in fresh');
+        test.equal(depth, 9.9, 'should be 9.9 meters equal 1 bars below sea level on earth in fresh');
         test.done();
     },
     '10.2 meters salt': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
-        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.barToDepthInMeters(1, true) * 100) / 100;
         test.equal(depth, 10.2, 'should be 10.2 meters equal 1 bars below sea level on earth in salt');
@@ -123,7 +123,7 @@ exports['depthInMetersToBars'] = {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
-        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var bars = Math.round(dive.depthInMetersToBars(10));
         test.equal(bars, 2, 'should be 10 meters equal 2 bars');
@@ -194,7 +194,7 @@ exports['depthInMetersToAtm'] = {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
-        test.equal(dive.gravitySamples.current(), 9.8, 'should be 9.8 m/s2 on earth as gravity default');
+        test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var atm = Math.round(dive.depthInMetersToAtm(10));
         test.equal(atm, 2, 'should be 10 meters equal 1atm below sea level on earth');
@@ -286,6 +286,40 @@ exports['partialPressureAtDepth'] = {
 
         test.equals(ppN2, 1.56, '10 meters below with 79% nitrogen should make nitrogen at ~1.56 bar absolute in salt water');
         test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute in salt water');
+        test.done();
+    }
+};
+
+exports['mmHgToPascal'] = {
+    setUp: function(done) {
+        done();
+    },
+    'no args': function(test) {
+        test.expect(1);
+        var pascal = Math.round(dive.mmHgToPascal());
+        test.equals(pascal, 133, '1 mmhg should equal about 133 pascal');
+        test.done();
+    },
+    '1 arg': function(test) {
+        test.expect(1);
+        var pascal = Math.round(dive.mmHgToPascal(2));
+        test.equals(pascal, 267, '2 mmhg should equal about 267 pascal');
+        test.done();
+    }
+};
+
+exports['waterVapourPressure'] = {
+    setUp: function(done) {
+        done();
+    },
+    'approximate pressure in lungs': function(test) {
+        test.expect(2);
+        var degreesCelcius = 35.2;
+        var mmHg = dive.waterVapourPressure(degreesCelcius);
+        test.equals(Math.round(mmHg), 43, '35.2 degrees celcius should put water vapour pressure at about 43 mmhg');
+        var pascals = dive.mmHgToPascal(mmHg);
+        var bars = dive.pascalToBar(pascals);
+        test.equals((Math.round(bars * 10000) / 10000), 0.0567, 'approximate water vapour pressure in the lungs should be about 0.0537 bars');
         test.done();
     }
 };

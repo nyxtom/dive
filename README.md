@@ -11,6 +11,16 @@ dive.feetToMeters(); // 0.3048
 dive.feetToMeters(33); // 10.0584
 dive.metersToFeet(10); // 3.28084
 
+// check defaults or change them
+dive.gravitySamples.current(); // 9.80665 m/s2
+dive.gravitySamples.current(9.8);
+dive.gravitySamples.current(); // 9.8 m/s2
+dive.surfaceSamples.current(); // 1 bar
+dive.surfaceSamples.current(1);
+dive.liquidSamples.fresh.density(); // 1000 kg/m3 (1 ton of a m^3)
+dive.liquidSamples.salt.density(); // 1030 kg/m3
+dive.liquidSamples.mercury.density(); // 13595.1 kg/m3
+
 // calculate dac, sac and rmv rate
 dive.dac(2500, 1300, 50); // 24 psi/min
 dive.sac(24, 10); // 12.022841322028032 psi/min given 24 psi/min dac rate
@@ -42,7 +52,25 @@ dive.partialPressureAtDepth(10, 0.21); // 0.42197400000000007 bar absolute
 // calculate partial pressures for above but in salt water
 dive.partialPressureAtDepth(10, 0.79, true); // 1.5642 bar absolute
 dive.partialPressureAtDepth(10, 0.21, true); // 0.4158 bar absolute
+
+// calculate water vapour pressure at a given temperature (degrees celcius)
+// use the conversion tools to calculate in terms of bars
+var mmHg = dive.waterVapourPressure(35.2); // 42.538675172399344 mmHg
+var pascals = dive.mmHgToPascal(mmHg); // 5671.357731455468 Pascal
+dive.pascalToBar(pascals); // 0.056713577314554675 bar
+
+// notice the 0.0567 bar above? we can plug that into the Buhlmann Decompression Algorithm
 ```
+
+## Notice of Use
+This library was built for pure research and educational purposes only.
+Use at your own risk. I am not responsible for any injuries that may
+occur as a result of experimenting with this software. Always
+use a backup dive computer when experimenting with educational tools like
+this and others that may implement various diving algorithms. It would be
+nice if other dive companies followed by publishing their implementations
+so the research and dive community could improve on it and ultimately
+protect more people.
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [grunt](https://github.com/gruntjs/grunt).
