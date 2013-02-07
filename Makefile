@@ -1,5 +1,7 @@
 JS_FILES = \
-	lib/dive.js
+	lib/prefix.js \
+	lib/core.js \
+	lib/postfix.js
 
 JS_COMPILER = \
         uglifyjs
