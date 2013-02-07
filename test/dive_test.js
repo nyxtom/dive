@@ -74,17 +74,17 @@ exports['atmToDepthInMeters'] = {
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.atmToDepthInMeters() * 100) / 100;
-        test.equal(depth, 10.03, 'should be 10.03 meters equal 1atm below sea level on earth in fresh');
+        test.equal(depth, 10.03, 'should be 10.03 meters equal 1atm below sea level on earth in salt water');
         test.done();
     },
-    '10.33 meters salt': function(test) {
+    '10.33 meters fresh water': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.atmToDepthInMeters(1, true) * 100) / 100;
-        test.equal(depth, 10.33, 'should be 10.33 meters equal 1atm below sea level on earth in salt');
+        test.equal(depth, 10.33, 'should be 10.33 meters equal 1atm below sea level on earth in fresh water');
         test.done();
     }
 };
@@ -100,17 +100,17 @@ exports['barToDepthInMeters'] = {
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.barToDepthInMeters() * 100) / 100;
-        test.equal(depth, 9.9, 'should be 9.9 meters equal 1 bars below sea level on earth in fresh');
+        test.equal(depth, 9.9, 'should be 9.9 meters equal 1 bars below sea level on earth in salt water');
         test.done();
     },
-    '10.2 meters salt': function(test) {
+    '10.2 meters fresh': function(test) {
         test.expect(3);
         dive.gravitySamples.current(dive.gravitySamples.earth);
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
         var depth = Math.round(dive.barToDepthInMeters(1, true) * 100) / 100;
-        test.equal(depth, 10.2, 'should be 10.2 meters equal 1 bars below sea level on earth in salt');
+        test.equal(depth, 10.2, 'should be 10.2 meters equal 1 bars below sea level on earth in fresh');
         test.done();
     }
 };
@@ -273,7 +273,7 @@ exports['partialPressureAtDepth'] = {
         test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute');
         test.done();
     },
-    'partial pressure in bar absolute for gas volume fraction in salt': function(test) {
+    'partial pressure in bar absolute for gas volume fraction in fresh': function(test) {
         test.expect(2);
         // diving with a tank that has 79% nitrogen and 21% oxygen
         // to 10 meters below sea level (or approximately 2 bar absolute)
@@ -284,8 +284,8 @@ exports['partialPressureAtDepth'] = {
         var ppN2 = Math.round(dive.partialPressureAtDepth(10, fiN2, true) * 100) / 100;
         var ppO2 = Math.round(dive.partialPressureAtDepth(10, fiO2, true) * 100) / 100;
 
-        test.equals(ppN2, 1.56, '10 meters below with 79% nitrogen should make nitrogen at ~1.56 bar absolute in salt water');
-        test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute in salt water');
+        test.equals(ppN2, 1.56, '10 meters below with 79% nitrogen should make nitrogen at ~1.56 bar absolute in fresh water');
+        test.equals(ppO2, 0.42, '10 meters below with 21% nitrogen should make oxygen at 0.42 bar absolute in fresh water');
         test.done();
     }
 };
@@ -320,6 +320,24 @@ exports['waterVapourPressure'] = {
         var pascals = dive.mmHgToPascal(mmHg);
         var bars = dive.pascalToBar(pascals);
         test.equals((Math.round(bars * 10000) / 10000), 0.0567, 'approximate water vapour pressure in the lungs should be about 0.0537 bars');
+        test.done();
+    }
+};
+
+exports['maxOperatingDepth'] = {
+    setUp: function(done) {
+        done();
+    },
+    'salt water - max depth 1.4 bar with 21% O2': function(test) {
+        test.expect(1);
+        var meters = dive.maxOperatingDepth(1.4, 0.21);
+        test.equals(Math.round(meters), 56, '1.4 bars at 21% oxygen should allow for about 56m MOD in salt water');
+        test.done();
+    },
+    'fresh water - max depth 1.4 bar with 21% O2': function(test) {
+        test.expect(1);
+        var meters = dive.maxOperatingDepth(1.4, 0.21, true);
+        test.equals(Math.round(meters), 58, '1.4 bars at 21% oxygen should allow for about 58m MOD in fresh water');
         test.done();
     }
 };

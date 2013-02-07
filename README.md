@@ -32,7 +32,7 @@ dive.depthInMetersToAtm(10); // 1.9962003454231434 atm
 dive.atmToDepthInMeters(1); // 10.038141470180305 meters
 dive.barToDepthInMeters(1); // 9.906875371507827 meters
 
-// calculate depth meters for all calculations above but in salt water
+// calculate depth meters for all calculations above but in fresh water
 dive.depthInMetersToBars(10, true); // 1.98 bar absolute (1 above)
 dive.depthInMetersToAtm(10, true); // 1.9671848013816926 atm absolute (1 above)
 dive.atmToDepthInMeters(1, true); // 10.339285714285714 meters
@@ -49,7 +49,7 @@ dive.partialPressure(p, 0.21); // 0.42197400000000007 bar absolute
 dive.partialPressureAtDepth(10, 0.79); // 1.5874260000000002 bar absolute
 dive.partialPressureAtDepth(10, 0.21); // 0.42197400000000007 bar absolute
 
-// calculate partial pressures for above but in salt water
+// calculate partial pressures for above but in fresh water
 dive.partialPressureAtDepth(10, 0.79, true); // 1.5642 bar absolute
 dive.partialPressureAtDepth(10, 0.21, true); // 0.4158 bar absolute
 
@@ -58,8 +58,12 @@ dive.partialPressureAtDepth(10, 0.21, true); // 0.4158 bar absolute
 var mmHg = dive.waterVapourPressure(35.2); // 42.538675172399344 mmHg
 var pascals = dive.mmHgToPascal(mmHg); // 5671.357731455468 Pascal
 dive.pascalToBar(pascals); // 0.056713577314554675 bar
-
 // notice the 0.0567 bar above? we can plug that into the Buhlmann Decompression Algorithm
+
+// calculate maximum operating depth using AIR (21% Oxygen) at 1.4 bars
+dive.maxOperatingDepth(1.4, 0.21); // 56.10089197613197 meters
+// calculate maximum operating depth using AIR (21% Oxygen) at 1.4 bars in fresh water
+dive.maxOperatingDepth(1.4, 0.21, true); // 57.78391873541593 meters
 ```
 
 ## Notice of Use
