@@ -1,0 +1,7 @@
+{
+  "name":"dive",
+  "version":"0.1.0",
+  "main":["dive.js"],
+  "dependencies": {
+  }
+}
