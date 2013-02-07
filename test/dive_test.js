@@ -1,4 +1,4 @@
-var dive = require('../lib/dive.js');
+var dive = require('../dive.js');
 
 /*
   ======== A Handy Little Nodeunit Reference ========

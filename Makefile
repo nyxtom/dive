@@ -20,3 +20,6 @@ dive.js: Makefile
 
 clean:
 	rm -rf dive.js n3.min.js
+
+test: all
+	grunt test
