@@ -341,3 +341,21 @@ exports['maxOperatingDepth'] = {
         test.done();
     }
 };
+
+exports['equivNarcoticDepth'] = {
+    setUp: function(done) {
+        done();
+    },
+    'salt water - equivalent narcotic depth 12% O2, 38% N2, 50% He at 100m': function(test) {
+        test.expect(1);
+        var meters = dive.equivNarcoticDepth(0.12,0.38,0.50,100);
+        test.equals(Math.round(meters), 57, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in salt water');
+        test.done();
+    },
+    'fresh water - equivalent narcotic depth 12% O2, 38% N2, 50% He at 100m': function(test) {
+        test.expect(1);
+        var meters = dive.equivNarcoticDepth(0.12,0.38,0.50,100,true);
+        test.equals(Math.round(meters), 57, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in fresh water');
+        test.done();
+    },
+};

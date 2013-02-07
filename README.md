@@ -64,6 +64,11 @@ dive.pascalToBar(pascals); // 0.056713577314554675 bar
 dive.maxOperatingDepth(1.4, 0.21); // 56.10089197613197 meters
 // calculate maximum operating depth using AIR (21% Oxygen) at 1.4 bars in fresh water
 dive.maxOperatingDepth(1.4, 0.21, true); // 57.78391873541593 meters
+
+// calculate the narcotic equivalent depth for breathing a gas mixture
+// that is 12% Oxygen, 38% Nitrogen and 50% Helium at 100m
+dive.equivNarcoticDepth(0.12, 0.38, 0.50, 100); // 56.882888936481194 meters air
+dive.equivNarcoticDepth(0.12, 0.38, 0.50, 100, true); // 56.766365121623096 meters air (in fresh water)
 ```
 
 ## Notice of Use
