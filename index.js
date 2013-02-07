@@ -1,2 +1,2 @@
 
-module.exports = require('./lib/dive');
+module.exports = require('./dive');
