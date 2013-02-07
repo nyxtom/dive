@@ -324,6 +324,19 @@ exports['waterVapourPressure'] = {
     }
 };
 
+exports['waterVapourPressureInBars'] = {
+    setUp: function(done) {
+        done();
+    },
+    'approximate pressure in lungs': function(test) {
+        test.expect(1);
+        var degreesCelcius = 35.2;
+        var bars = dive.waterVapourPressureInBars(degreesCelcius);
+        test.equals((Math.round(bars * 10000) / 10000), 0.0567, 'approximate water vapour pressure in the lungs should be about 0.0537 bars');
+        test.done();
+    }
+};
+
 exports['maxOperatingDepth'] = {
     setUp: function(done) {
         done();

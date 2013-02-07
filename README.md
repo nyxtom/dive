@@ -58,6 +58,7 @@ dive.partialPressureAtDepth(10, 0.21, true); // 0.4158 bar absolute
 var mmHg = dive.waterVapourPressure(35.2); // 42.538675172399344 mmHg
 var pascals = dive.mmHgToPascal(mmHg); // 5671.357731455468 Pascal
 dive.pascalToBar(pascals); // 0.056713577314554675 bar
+dive.waterVapourPressureInBars(35.2); // 0.056713577314554675 bar
 // notice the 0.0567 bar above? we can plug that into the Buhlmann Decompression Algorithm
 
 // calculate maximum operating depth using AIR (21% Oxygen) at 1.4 bars
