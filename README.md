@@ -83,14 +83,14 @@ dive.depthChangeInBarsPerMinute(0, 10, 0.5, true); // 1.9613300000000002 bars pe
 dive.gasRateInBarsPerMinute(0, 10, 0.5, 0.79); // 1.595934221 bars per minute (in salt water)
 dive.gasRateInBarsPerMinute(0, 10, 0.5, 0.79,, true); // 1.5494507 bars per minute (in fresh water)
 
-// instantaneous equation (exposed at 20 meters with AIR for 40 minutes)
-var ppGas = (dive.depthInMetersToBars(20) - 1 - dive.waterVapourPressureInBars()) * 0.79;
-dive.instantaneousEquation(0.79, ppGas, 40, 4.0); // 1.5940936555866738 bar
-
 // gas breathing pressure in bars accounting for water vapour pressure in the lungs
 // calculate the pressure at 10 meters breathing 79% N2
 dive.gasPressureBreathingInBars(10, 0.79); // 0.7531633844215019 bars (in salt water)
 dive.gasPressureBreathingInBars(10, 0.79, true); // 0.729921623921502 bars (in fresh water)
+
+// instantaneous equation (exposed at 20 meters with AIR for 40 minutes)
+var pGas = dive.gasPressureBreathingInBars(20, 0.79);
+dive.instantaneousEquation(0.79, pGas, 40, 4.0); // 1.5940936555866738 bar
 ```
 
 ## Notice of Use
