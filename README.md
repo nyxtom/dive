@@ -15,11 +15,14 @@ dive.metersToFeet(10); // 3.28084
 dive.gravitySamples.current(); // 9.80665 m/s2
 dive.gravitySamples.current(9.8);
 dive.gravitySamples.current(); // 9.8 m/s2
-dive.surfaceSamples.current(); // 1 bar
-dive.surfaceSamples.current(1);
+dive.surfacePressureSamples.current(); // 1 bar
+dive.surfacePressureSamples.current(1);
 dive.liquidSamples.fresh.density(); // 1000 kg/m3 (1 ton of a m^3)
 dive.liquidSamples.salt.density(); // 1030 kg/m3
 dive.liquidSamples.mercury.density(); // 13595.1 kg/m3
+dive.constants.vapourPressure.lungsBreathing.current(); // 0.056713577314554675 bars (commonly seen in buhlmann deco algorithms)
+dive.constants.altitudePressure.current(); // 1 bar (for sea level)
+dive.constants.altitudePressure.current(0.6600); // (approx. 3000 meters above sea level)
 
 // calculate dac, sac and rmv rate
 dive.dac(2500, 1300, 50); // 24 psi/min
