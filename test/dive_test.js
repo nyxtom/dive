@@ -424,3 +424,25 @@ exports['gasRateInBarsPerMinute'] = {
         test.done();
     }
 };
+
+exports['gasPressureBreathingInBars'] = {
+    setUp: function(done) {
+        done();
+    },
+    'breathing 79% N2 at 10 meters in salt water': function(test) {
+        test.expect(2);
+        var waterVapourPressure = dive.constants.vapourPressure.lungsBreathing.current();
+        test.equals(Math.round(waterVapourPressure * 10000) / 10000, 0.0567, 'water vapour pressure in the lungs should be about 0.0567 bars');
+        var bars = dive.gasPressureBreathingInBars(10, 0.79);
+        test.equals(Math.round(bars * 1000) / 1000, 0.753, 'breathing 79% N2 at 10 meters in salt water should be about 0.753 bars');
+        test.done();
+    },
+    'breathing 79% N2 at 10 meters in fresh water': function(test) {
+        test.expect(2);
+        var waterVapourPressure = dive.constants.vapourPressure.lungsBreathing.current();
+        test.equals(Math.round(waterVapourPressure * 10000) / 10000, 0.0567, 'water vapour pressure in the lungs should be about 0.0567 bars');
+        var bars = dive.gasPressureBreathingInBars(10, 0.79, true);
+        test.equals(Math.round(bars * 100) / 100, 0.73, 'breathing 79% N2 at 10 meters in fresh water should be about 0.73 bars');
+        test.done();
+    }
+};
