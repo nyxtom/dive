@@ -60,7 +60,7 @@
         earth: 9.80665,
         _current: 9.80665,
         current: function (_value) {
-            if (typeof _value == 'Number') {
+            if (typeof _value == 'number') {
                 $self.gravitySamples._current = _value;
             }
             return $self.gravitySamples._current;
@@ -72,7 +72,7 @@
         earth: 1,
         _current: 1,
         current: function (_value) {
-            if (typeof _value == 'Number') {
+            if (typeof _value == 'number') {
                 $self.surfacePressureSamples._current = _value;
             }
             return $self.surfacePressureSamples._current;
@@ -100,7 +100,7 @@
             sealevel: 1,
             _current: 1,
             current: function (_value) {
-                if (typeof _value == 'Number') {
+                if (typeof _value == 'number') {
                     $self.constants.altitudePressure._current = _value;
                 }
                 return $self.constants.altitudePressure._current;
