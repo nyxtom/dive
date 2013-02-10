@@ -372,3 +372,55 @@ exports['equivNarcoticDepth'] = {
         test.done();
     },
 };
+
+exports['instantaneousEquation'] = {
+    setUp: function(done) {
+        done();
+    },
+    'simple instant pressure calculation': function(test) {
+        test.expect(2);
+        var ppNitrogen = dive.partialPressure(1, 0.79) - dive.waterVapourPressureInBars();
+        test.equals(Math.round(ppNitrogen * 10000) / 10000, 0.7887, 'Initial partial pressure of nitrogen minus water vapour should be 0.7887');
+        var fN2 = 0.79;
+        var ppGas = (dive.depthInMetersToBars(20) - 1 - dive.waterVapourPressureInBars()) * fN2;
+        var newPPNitrogen = dive.instantaneousEquation(ppNitrogen, ppGas, 40, 4.0);
+        test.equals(Math.round(newPPNitrogen * 100) / 100, 1.59, 'Exposed to regular air for 40 minutes at 20 meters should put pp nitrogen at 1.59');
+        test.done();
+    }
+};
+
+exports['depthChangeInBarsPerMinute'] = {
+    setUp: function(done) {
+        done();
+    },
+    '0 to 10 meters in 30 seconds in salt water': function(test) {
+        test.expect(1);
+        var barsPerMinute = dive.depthChangeInBarsPerMinute(0, 10, 0.5);
+        test.equals(barsPerMinute, 2.0201699, '0 to 10 meters in 30 seconds should be about 2 bars per minute.');
+        test.done();
+    },
+    '0 to 10 meters in 30 seconds in fresh water': function(test) {
+        test.expect(1);
+        var barsPerMinute = dive.depthChangeInBarsPerMinute(0, 10, 0.5, true);
+        test.equals(barsPerMinute, 1.9613300000000002, '0 to 10 meters in 30 seconds in fresh water should be about 1.9 bars per minute.');
+        test.done();
+    }
+};
+
+exports['gasRateInBarsPerMinute'] = {
+    setUp: function(done) {
+        done();
+    },
+    '0 to 10 meters in 30 seconds in salt water for 79% N2': function(test) {
+        test.expect(1);
+        var barsPerMinute = dive.gasRateInBarsPerMinute(0, 10, 0.5, 0.79);
+        test.equals(barsPerMinute, 1.595934221, '0 to 10 meters in 30 seconds should be about 1.6 bars per minute for 79% N2.');
+        test.done();
+    },
+    '0 to 10 meters in 30 seconds in fresh water for 79% N2': function(test) {
+        test.expect(1);
+        var barsPerMinute = dive.gasRateInBarsPerMinute(0, 10, 0.5, 0.79, true);
+        test.equals(barsPerMinute, 1.5494507000000002, '0 to 10 meters in 30 seconds in fresh water should be about 1.5 bars per minute for 79% N2.');
+        test.done();
+    }
+};

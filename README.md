@@ -70,6 +70,18 @@ dive.maxOperatingDepth(1.4, 0.21, true); // 57.78391873541593 meters
 // that is 12% Oxygen, 38% Nitrogen and 50% Helium at 100m
 dive.equivNarcoticDepth(0.12, 0.38, 0.50, 100); // 56.882888936481194 meters air
 dive.equivNarcoticDepth(0.12, 0.38, 0.50, 100, true); // 56.766365121623096 meters air (in fresh water)
+
+// depth change in bars per minute (e.g. 0 to 10 meters in 30 seconds)
+dive.depthChangeInBarsPerMinute(0, 10, 0.5); // 2.0201699 bars per minute (in salt water)
+dive.depthChangeInBarsPerMinute(0, 10, 0.5, true); // 1.9613300000000002 bars per minute (in fresh water)
+
+// gas rate in bars per minute (e.g. 0 to 10 meters in 30 seconds with 79% Nitrogen)
+dive.gasRateInBarsPerMinute(0, 10, 0.5, 0.79); // 1.595934221 bars per minute (in salt water)
+dive.gasRateInBarsPerMinute(0, 10, 0.5, 0.79,, true); // 1.5494507 bars per minute (in fresh water)
+
+// instantaneous equation (exposed at 20 meters with AIR for 40 minutes)
+var ppGas = (dive.depthInMetersToBars(20) - 1 - dive.waterVapourPressureInBars()) * 0.79;
+dive.instantaneousEquation(0.79, ppGas, 40, 4.0); // 1.5940936555866738 bar
 ```
 
 ## Notice of Use
