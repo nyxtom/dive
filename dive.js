@@ -474,17 +474,6 @@
         return ((relation - $self.constants.altitudePressure.current()) * $self.barToDepthInMeters(1, isFreshWater));
     };
 
-    $self.instantaneousEquation = function (pBegin, pGas, time, halfTime) {
-        /// <summary>Calculates the compartment inert gas pressure.</summary>
-        /// <param name="pBegin" type="Number">Initial compartment inert gas pressure.</param>
-        /// <param name="pGas" type="Number">Partial pressure of inspired inert gas.</param>
-        /// <param name="time" type="Number">Time of exposure or interval.</param>
-        /// <param name="halfTime" type="Number">Half time of the given gas exposure.</param>
-        /// <returns>Approximate pressure of a given gas over the exposure rate and half time.</returns>
-
-        return (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
-    };
-
     $self.depthChangeInBarsPerMinute = function (beginDepth, endDepth, time, isFreshWater) {
         /// <summary>Calculates the depth change speed in bars per minute.</summary>
         /// <param name="beginDepth" type="Number">The begin depth in meters.</param>
@@ -519,6 +508,29 @@
         var bars = $self.depthInMetersToBars(depth, isFreshWater);
         bars = bars - $self.constants.altitudePressure.current() - $self.constants.vapourPressure.lungsBreathing.current();
         return bars * fGas;
+    };
+
+    $self.instantaneousEquation = function (pBegin, pGas, time, halfTime) {
+        /// <summary>Calculates the compartment inert gas pressure.</summary>
+        /// <param name="pBegin" type="Number">Initial compartment inert gas pressure.</param>
+        /// <param name="pGas" type="Number">Partial pressure of inspired inert gas.</param>
+        /// <param name="time" type="Number">Time of exposure or interval.</param>
+        /// <param name="halfTime" type="Number">Half time of the given gas exposure.</param>
+        /// <returns>Approximate pressure of a given gas over the exposure rate and half time.</returns>
+
+        return (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+    };
+
+    $self.schreinerEquation = function (gasRate, time, timeConstant, pGas, pBegin) {
+        /// <summary>Calculates the end compartment inert gas pressure in bar.</summary>
+        /// <param name="gasRate" type="Number">Rate of descent/ascent in bar times the fraction of inert gas.</param>
+        /// <param name="time" type="Number">Time of exposure or interval in minutes.</param>
+        /// <param name="timeConstant" type="Number">Log2/half-time in minute.</param>
+        /// <param name="pGas" type="Number">Partial pressure of inspired inert gas.</param>
+        /// <param name="pBegin" type="Number">Initial compartment inert gas pressure.</param>
+        /// <returns>The end compartment inert gas pressure in bar.</returns>
+
+        return (pGas + (gasRate * (time - (1.0/timeConstant))) - ((pGas - pBegin - (gasRate / timeConstant)) * Math.exp(-timeConstant * time)));
     };
 
 }).call(this);
