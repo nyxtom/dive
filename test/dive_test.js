@@ -1,4 +1,4 @@
-var dive = require('../dive.js');
+var dive = require('../scuba-dive.js');
 
 /*
   ======== A Handy Little Nodeunit Reference ========

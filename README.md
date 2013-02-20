@@ -6,7 +6,7 @@ Various standard scuba diving algorithms, formulas, calculations and device mana
 Install the module with: `npm install scuba-dive`
 
 ```javascript
-var dive = require('dive');
+var dive = require('scuba-dive');
 dive.feetToMeters(); // 0.3048
 dive.feetToMeters(33); // 10.0584
 dive.metersToFeet(10); // 3.28084
