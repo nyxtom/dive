@@ -91,7 +91,20 @@ dive.gasPressureBreathingInBars(10, 0.79, true); // 0.729921623921502 bars (in f
 // instantaneous equation (exposed at 20 meters with AIR for 40 minutes)
 var pGas = dive.gasPressureBreathingInBars(20, 0.79);
 dive.instantaneousEquation(0.79, pGas, 40, 4.0); // 1.5940936555866738 bar
+
+// buhlmann deco algorithm (*this needs review*)
+var buhlmannDeco = dive.deco.buhlmann();
+var newPlan = new buhlmannDeco.plan(buhlmannDeco.ZH16ATissues); // 1 abs pressure in fresh water
+newPlan.addDepthChange(0, 25, 0.79, 0.0, 2);
+newPlan.addFlat(25, 0.79, 0.0, 20);
+newPlan.addDepthChange(25, 35, 0.79, 0.0, 2);
+newPlan.addFlat(35, 0.79, 0.0, 20);
+newPlan.addDepthChange(35, 10, 0.79, 0.0, 2); 
+newPlan.calculateDecompression(0.79, 0.0); // [{'depth':3,'time':2}] 1 stop at 3 meters for 2 minutes
 ```
+
+## TODO
+* Need better test cases and validation for buhlmann implementation (needs review)
 
 ## Notice of Use
 This library was built for pure research and educational purposes only.
