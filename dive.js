@@ -23,7 +23,7 @@
     }
 
     // current version of the library
-    $self.VERSION = '0.1.0';
+    $self.VERSION = '0.1.1';
 
     /*
      * The effect of pressure and temperature on the densities of liquids 

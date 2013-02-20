@@ -3,7 +3,7 @@
 Various standard scuba diving algorithms, formulas, calculations and device management.
 
 ## Getting Started
-Install the module with: `npm install dive`
+Install the module with: `npm install scuba-dive`
 
 ```javascript
 var dive = require('dive');

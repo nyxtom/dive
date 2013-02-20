@@ -1,7 +1,7 @@
 {
-  "name": "dive",
+  "name": "scuba-dive",
   "description": "Various standard scuba diving algorithms, formulas, calculations and device management.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/nyxtom/dive",
   "author": {
     "name": "Thomas Holloway",

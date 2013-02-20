@@ -1,6 +1,6 @@
 {
-  "name":"dive",
-  "version":"0.1.0",
+  "name":"scuba-dive",
+  "version":"0.1.1",
   "main":["dive.js"],
   "dependencies": {
   }
