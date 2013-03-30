@@ -476,5 +476,15 @@ exports['buhlmannplan'] = {
         test.equals(2, decoProc[0].time, 'should be one decompression stop at 3 meters for 2 minutes');
         test.equals(3, decoProc[0].depth, 'should be one decompression stop at 3 meters for 2 minutes');
         test.done();
+    },
+    'ndl': function (test) {
+        test.expect(0);
+        var buhlmann = dive.deco.buhlmann();
+        var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
+        newPlan.addDepthChange(0, 25, 0.79, 0.0, 2);
+        newPlan.addFlat(25, 0.79, 0.0, 20);
+        newPlan.addDepthChange(25, 35, 0.79, 0.0, 2);
+        console.log(newPlan.ndl(0.79, 0.0));
+        test.done();
     }
 };
