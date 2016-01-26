@@ -649,7 +649,8 @@
             return this.halfTimes[5];
         };
 
-        buhlmannTissue.prototype.addFlat = function (depth, fN2, fHe, time) {
+        buhlmannTissue.prototype.addFlat = function (depth, fO2, fHe, time) {
+            var fN2 = (1 - fO2) - fHe
             var pGas = dive.gasPressureBreathingInBars(depth, fN2, this.isFreshWater);
             var pBegin = this.pNitrogen;
             var halfTime = this.N2HalfTime();
@@ -659,7 +660,8 @@
             this.pTotal = this.pNitrogen + this.pHelium;
         };
 
-        buhlmannTissue.prototype.addDepthChange = function (startDepth, endDepth, fN2, fHe, time) {
+        buhlmannTissue.prototype.addDepthChange = function (startDepth, endDepth, fO2, fHe, time) {
+            var fN2 = (1 - fO2) - fHe
             // Calculate nitrogen loading
             var gasRate = dive.gasRateInBarsPerMinute(startDepth, endDepth, time, fN2, this.isFreshWater);
             var timeConstant = Math.log(2) / this.N2HalfTime(); // half-time constant = log2/half-time in minutes
@@ -695,15 +697,16 @@
             }
         };
 
-        plan.prototype.addFlat = function (depth, fN2, fHe, time) {
+        plan.prototype.addFlat = function (depth, fO2, fHe, time) {
+            var fN2 = (1 - fO2) - fHe
             for (var i = 0; i < this.tissues.length; i++) {
                 this.tissues[i].addFlat(depth, fN2, fHe, time);
             }
         };
 
-        plan.prototype.addDepthChange = function (startDepth, endDepth, fN2, fHe, time) {
+        plan.prototype.addDepthChange = function (startDepth, endDepth, fO2, fHe, time) {
             for (var i = 0; i < this.tissues.length; i++) {
-                this.tissues[i].addDepthChange(startDepth, endDepth, fN2, fHe, time);
+                this.tissues[i].addDepthChange(startDepth, endDepth, fO2, fHe, time);
             }
         };
 
@@ -730,7 +733,8 @@
             }
         }
         
-        plan.prototype.calculateDecompression = function (fN2, fHe, maintainTissues) {
+        plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues) {
+            var fN2 = (1 - fO2) - fHe
             var decoProc = [];
             var ceiling = this.getCeiling();
             if (!maintainTissues) {
@@ -741,7 +745,7 @@
                 var nextDecoDepth = (ceiling - 3);
                 var time = 0;
                 while (ceiling > nextDecoDepth) {
-                    this.addFlat(currentDepth, fN2, fHe, time);
+                    this.addFlat(currentDepth, fO2, fHe, time);
                     time++;
                     ceiling = this.getCeiling();
                 }
@@ -753,13 +757,14 @@
             return decoProc;
         };
 
-        plan.prototype.ndl = function (fN2, fHe) {
+        plan.prototype.ndl = function (fO2, fHe) {
+            var fN2 = (1 - fO2) - fHe
             var ceiling = this.getCeiling();
             var currentDepth = ceiling;
             var origTissues = JSON.stringify(this.tissues);
             var time = 0;
             while (ceiling < 0) {
-                this.addFlat(ceiling + 3, fN2, fHe, 1);
+                this.addFlat(ceiling + 3, fO2, fHe, 1);
                 ceiling = this.getCeiling();
                 console.log(ceiling);
                 time++;
