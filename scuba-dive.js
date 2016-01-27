@@ -519,12 +519,12 @@
         /// <returns>Approximate pressure of a given gas over the exposure rate and half time.</returns>
 
         //return schreiner equation with rate of change zero - indicating constant depth
-        //var instantLoad = (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
-        var slopeLoad = this.schreinerEquation(pBegin, pGas, time, halfTime, 0);
+        var instantLoad = (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+        //var slopeLoad = this.schreinerEquation(pBegin, pGas, time, halfTime, 0);
         //if (instantLoad < slopeLoad) {
         //    console.log("InstandLoad: " + instantLoad + ", SlopeLoad:" + slopeLoad);
         //}
-        return slopeLoad;
+        return instantLoad;
     };
 
     $self.schreinerEquation = function (pBegin, pGas, time, halfTime, gasRate) {
@@ -532,7 +532,7 @@
         /// <param name="gasRate" type="Number">Rate of descent/ascent in bar times the fraction of inert gas.</param>
         /// <param name="time" type="Number">Time of exposure or interval in minutes.</param>
         /// <param name="timeConstant" type="Number">Log2/half-time in minute.</param>
-        /// <param name="pGas" type="Number">Partial pressure of inspired inert gas.</param>
+        /// <param name="pGas" type="Number">Partial pressure of inert gas at CURRENT depth (not target depth - but starting depth where change begins.)</param>
         /// <param name="pBegin" type="Number">Initial compartment inert gas pressure.</param>
         /// <returns>The end compartment inert gas pressure in bar.</returns>
         var timeConstant = Math.log(2)/halfTime

@@ -541,6 +541,27 @@ exports['buhlmannequations'] = {
             }
         }
         test.done();
+    },
+
+    'instantaneous equation is shreiner equation with rate zero': function (test) {
+        test.expect(150);
+        var buhlmann = dive.deco.buhlmann();
+        var targetGasPressure = 7 * 0.79;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            for (var time = 1; time <= 10; time++) {
+                var gasRate = targetGasPressure/time;
+                var slopeLoad = dive.schreinerEquation(0, targetGasPressure, time, halfTime, 0);
+                var flatLoad = dive.instantaneousEquation(0, targetGasPressure, time, halfTime)
+                var diff = Math.abs(slopeLoad-flatLoad)
+                test.ok(diff <= 0.0000001, 'the load from slope equation should be identical to load from flat equation, when slope == 0');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ", GasRate: "+gasRate+") slope load-> " + slopeLoad + "  flatLoad->" + flatLoad);
+            }
+        }
+        test.done();
     }
 };
 
