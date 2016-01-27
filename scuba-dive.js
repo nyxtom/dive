@@ -698,9 +698,8 @@
         };
 
         plan.prototype.addFlat = function (depth, fO2, fHe, time) {
-            var fN2 = (1 - fO2) - fHe
             for (var i = 0; i < this.tissues.length; i++) {
-                this.tissues[i].addFlat(depth, fN2, fHe, time);
+                this.tissues[i].addFlat(depth, fO2, fHe, time);
             }
         };
 
@@ -734,7 +733,6 @@
         }
         
         plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues) {
-            var fN2 = (1 - fO2) - fHe
             var decoProc = [];
             var ceiling = this.getCeiling();
             if (!maintainTissues) {
@@ -758,7 +756,6 @@
         };
 
         plan.prototype.ndl = function (fO2, fHe) {
-            var fN2 = (1 - fO2) - fHe
             var ceiling = this.getCeiling();
             var currentDepth = ceiling;
             var origTissues = JSON.stringify(this.tissues);
