@@ -551,7 +551,6 @@
     $self = dive.deco = dive.deco || {};
 
     $self.buhlmann = function() {
-
         var algorithm = {};
         algorithm.ZH16ATissues = [
             // N2HalfTime, N2AValue, N2BValue, HeHalfTime, HeAValue, HeBValue
@@ -650,11 +649,18 @@
         };
 
         buhlmannTissue.prototype.addFlat = function (depth, fO2, fHe, time) {
+            //calculate nitrogen loading
             var fN2 = (1 - fO2) - fHe
             var pGas = dive.gasPressureBreathingInBars(depth, fN2, this.isFreshWater);
             var pBegin = this.pNitrogen;
             var halfTime = this.N2HalfTime();
             this.pNitrogen = dive.instantaneousEquation(pBegin, pGas, time, halfTime);
+
+            //calculate helium loading
+            pGas = dive.gasPressureBreathingInBars(depth, fHe, this.isFreshWater);
+            pBegin = this.pHelium;
+            halfTime = this.HeHalfTime();
+            this.pHelium = dive.instantaneousEquation(pBegin, pGas, time, halfTime);
 
             // Calculate total loading
             this.pTotal = this.pNitrogen + this.pHelium;
@@ -680,10 +686,11 @@
             this.pTotal = this.pNitrogen + this.pHelium;
         };
 
-        buhlmannTissue.prototype.calculateCeiling = function () {
+        buhlmannTissue.prototype.calculateCeiling = function (gf) {
+            gf = gf || 1.0
             var a = ((this.N2AValue() * this.pNitrogen) + (this.HeAValue() * this.pHelium)) / (this.pTotal);
             var b = ((this.N2BValue() * this.pNitrogen) + (this.HeBValue() * this.pHelium)) / (this.pTotal);
-            var bars = (this.pTotal - a) * b;
+            var bars = (this.pTotal - (a * gf)) / ((gf / b) + 1.0 - gf);
             bars = bars - this.absPressure;
             this.ceiling = dive.barToDepthInMeters(bars, this.isFreshWater);
             return Math.round(this.ceiling);
@@ -709,10 +716,11 @@
             }
         };
 
-        plan.prototype.getCeiling = function () {
+        plan.prototype.getCeiling = function (gf) {
+            gf = gf || 1.0
             var ceiling = 0;
             for (var i = 0; i < this.tissues.length; i++) {
-                var tissueCeiling = this.tissues[i].calculateCeiling();
+                var tissueCeiling = this.tissues[i].calculateCeiling(gf);
                 if (!ceiling || tissueCeiling > ceiling) {
                     ceiling = tissueCeiling;
                 }
@@ -731,10 +739,16 @@
                 }
             }
         }
-        
-        plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues) {
+
+        plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues, gfLow, gfHigh) {
+            gfLow = gfLow || 1.0;
+            gfHigh = gfHigh || 1.0;
             var decoProc = [];
-            var ceiling = this.getCeiling();
+            var ceiling = this.getCeiling(gfLow);
+            var gfDiff = gfHigh-gfLow; //find variance in gradient factor
+            var distanceToSurface = ceiling
+            var gfChangePerMeter = gfDiff/distanceToSurface
+
             if (!maintainTissues) {
                 var origTissues = JSON.stringify(this.tissues);
             }
@@ -745,7 +759,8 @@
                 while (ceiling > nextDecoDepth) {
                     this.addFlat(currentDepth, fO2, fHe, time);
                     time++;
-                    ceiling = this.getCeiling();
+                    var gf = gfLow + (gfChangePerMeter * (distanceToSurface - ceiling))
+                    ceiling = this.getCeiling(gf);
                 }
                 decoProc.push({'depth': currentDepth, 'time': time});
             };
@@ -755,19 +770,20 @@
             return decoProc;
         };
 
-        plan.prototype.ndl = function (fO2, fHe) {
-            var ceiling = this.getCeiling();
-            var currentDepth = ceiling;
+        plan.prototype.ndl = function (depth, fO2, fHe, gf) {
+            gf = gf || 1.0
+            var ceiling = this.getCeiling(gf);
             var origTissues = JSON.stringify(this.tissues);
             var time = 0;
-            while (ceiling < 0) {
-                this.addFlat(ceiling + 3, fO2, fHe, 1);
-                ceiling = this.getCeiling();
-                console.log(ceiling);
+            while (ceiling <= 0) {
+                this.addFlat(depth, fO2, fHe, 1);
+                if (this.getCeiling(gf) > ceiling) {
+                    ceiling = this.getCeiling(gf);
+                }
                 time++;
             }
             this.resetTissues(origTissues);
-            return time;
+            return time-1; //We went one minute past a ceiling of "0"
         };
 
         algorithm.buhlmannTissue = buhlmannTissue;

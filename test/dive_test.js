@@ -446,6 +446,102 @@ exports['gasPressureBreathingInBars'] = {
     }
 };
 
+exports['buhlmannequations'] = {
+    setUp: function(done) {
+        done();
+    },
+    'instantaneous buhlmann equation': function (test) {
+        test.expect(165);
+        var buhlmann = dive.deco.buhlmann();
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var prevLoad = 10000;
+            var prevLoadChange = 100;
+            for (var time = 1; time <= 10; time++) {
+                var load = dive.instantaneousEquation(0, 7 * 0.79, time, halfTime);
+                var loadChange = load - prevLoad;
+                test.ok(true, loadChange < prevLoadChange, 'over time, the change in tissue load must decrease.');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+                prevLoad = load;
+                prevLoadChange = loadChange;
+            }
+        }
+
+        var prevLoad = 10000;
+        var prevLoadChange = 100;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var load = dive.instantaneousEquation(0, 7 * 0.79, 10, halfTime);
+            var loadChange = load - prevLoad;
+            test.ok(true, loadChange < prevLoadChange, 'over increasing half-lives, the change in tissue load must decrease for constant time.');
+            //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+            prevLoad = load;
+            prevLoadChange = loadChange;
+        }
+        test.done();
+    },
+    'schreiner buhlmann equation': function (test) {
+        test.expect(165);
+        var buhlmann = dive.deco.buhlmann();
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var prevLoad = 10000;
+            var prevLoadChange = 100;
+            for (var time = 1; time <= 10; time++) {
+                var load = dive.schreinerEquation(1, time, Math.log(2)/halfTime, 7 * 0.79, 0);
+                var loadChange = load - prevLoad;
+                test.ok(true, loadChange < prevLoadChange, 'over time, the change in tissue load must decrease.');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+                prevLoad = load;
+                prevLoadChange = loadChange;
+            }
+        }
+
+        var prevLoad = 10000;
+        var prevLoadChange = 100;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var load = dive.schreinerEquation(1, 10, Math.log(2)/halfTime, 7 * 0.79, 0);
+            var loadChange = load - prevLoad;
+            test.ok(true, loadChange < prevLoadChange, 'over increasing half-lives, the change in tissue load must decrease for constant time.');
+            //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+            prevLoad = load;
+            prevLoadChange = loadChange;
+        }
+        test.done();
+    },
+    'comparison of slope loading vs flat loading': function (test) {
+        test.expect(150);
+        var buhlmann = dive.deco.buhlmann();
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            for (var time = 1; time <= 10; time++) {
+                var slopeLoad = dive.schreinerEquation(1, time, Math.log(2)/halfTime, 7 * 0.79, 0);
+                var flatLoad = dive.instantaneousEquation(0, 7 * 0.79, time, halfTime)
+                test.ok(true, slopeLoad < flatLoad, 'for any depth, the load going down a slope, should be far lower than spending all time at that depth');
+                console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") slope load-> " + slopeLoad + "  flatLoad->" + flatLoad);
+            }
+        }
+        test.done();
+    }
+};
+
+
 exports['buhlmannplan'] = {
     setUp: function(done) {
         done();
@@ -480,10 +576,12 @@ exports['buhlmannplan'] = {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
-        newPlan.addFlat(25, 0.21, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
-        //console.log(newPlan.ndl(0.21, 0.0));
+        var depthM = dive.feetToMeters(80)
+        newPlan.addDepthChange(0, depthM, 0.32, 0, 3)
+        newPlan.addFlat(depthM, 0.32, 0, 0)
+        //console.log("100 feet: " + newPlan.ndl(depthM, 0.32, 0.0, 0.66));
+        //console.log("70 feet: " + newPlan.ndl(dive.feetToMeters(70), 0.32, 0.0));
+        //console.log("30 feet: " + newPlan.ndl(dive.feetToMeters(30), 0.32, 0.0));
         test.done();
     }
 };
