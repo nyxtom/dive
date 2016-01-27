@@ -433,7 +433,7 @@ exports['gasPressureBreathingInBars'] = {
         var waterVapourPressure = dive.constants.vapourPressure.lungsBreathing.current();
         test.equals(Math.round(waterVapourPressure * 10000) / 10000, 0.0567, 'water vapour pressure in the lungs should be about 0.0567 bars');
         var bars = dive.gasPressureBreathingInBars(10, 0.79);
-        test.equals(Math.round(bars * 1000) / 1000, 0.753, 'breathing 79% N2 at 10 meters in salt water should be about 0.753 bars');
+        test.equals(Math.round(bars * 1000) / 1000, 1.588, 'breathing 79% N2 at 10 meters in salt water should be about 1.588 bars (remember to add 1 bar for the surface)');
         test.done();
     },
     'breathing 79% N2 at 10 meters in fresh water': function(test) {
@@ -441,7 +441,7 @@ exports['gasPressureBreathingInBars'] = {
         var waterVapourPressure = dive.constants.vapourPressure.lungsBreathing.current();
         test.equals(Math.round(waterVapourPressure * 10000) / 10000, 0.0567, 'water vapour pressure in the lungs should be about 0.0567 bars');
         var bars = dive.gasPressureBreathingInBars(10, 0.79, true);
-        test.equals(Math.round(bars * 100) / 100, 0.73, 'breathing 79% N2 at 10 meters in fresh water should be about 0.73 bars');
+        test.equals(Math.round(bars * 100) / 100, 1.56, 'breathing 79% N2 at 10 meters in fresh water should be about 1.56 bars (remember to add 1 bar for the surface)');
         test.done();
     }
 };
@@ -570,6 +570,7 @@ exports['buhlmannplan'] = {
     setUp: function(done) {
         done();
     },
+    /*
     'simple depth change analysis': function (test) {
         test.expect(1);
         var buhlmann = dive.deco.buhlmann();
@@ -581,7 +582,6 @@ exports['buhlmannplan'] = {
         test.equals(3, newPlan.getCeiling(1), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
-    /*
     'deco procedure': function (test) {
         test.expect(3);
         var buhlmann = dive.deco.buhlmann();
@@ -599,15 +599,27 @@ exports['buhlmannplan'] = {
     },
     */
 
-    'ndl': function (test) {
+    'ndl rule of 130 for 32 percent': function (test) {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
-        var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addFlat(35, 0.32, 0.0, 30);
-        console.log("100 feet: " + newPlan.ndl(dive.feetToMeters(100), 0.32, 0.0, 0.8));
-        console.log("80 feet: " + newPlan.ndl(dive.feetToMeters(80), 0.32, 0.0, 0.8));
-        console.log("70 feet: " + newPlan.ndl(dive.feetToMeters(70), 0.32, 0.0, 0.8));
-        console.log("30 feet: " + newPlan.ndl(dive.feetToMeters(30), 0.32, 0.0, 0.8));
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
+        console.log("100 feet: " + newPlan.ndl(dive.feetToMeters(100), 0.32, 0.0, 1));
+        console.log("80 feet: " + newPlan.ndl(dive.feetToMeters(80), 0.32, 0.0, 1));
+        console.log("70 feet: " + newPlan.ndl(dive.feetToMeters(70), 0.32, 0.0, 1));
+        console.log("30 feet: " + newPlan.ndl(dive.feetToMeters(30), 0.32, 0.0, 1));
+        test.done();
+    },
+
+    'ndl for air': function (test) {
+        test.expect(0);
+        var buhlmann = dive.deco.buhlmann();
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
+        console.log("100 feet: " + newPlan.ndl(dive.feetToMeters(100), 0.21, 0.0, 1.8));
+        console.log("80 feet: " + newPlan.ndl(dive.feetToMeters(80), 0.21, 0.0, 1.8));
+        console.log("70 feet: " + newPlan.ndl(dive.feetToMeters(70), 0.21, 0.0, 1.8));
+        console.log("30 feet: " + newPlan.ndl(dive.feetToMeters(30), 0.21, 0.0, 1.8));
         test.done();
     }
 };
