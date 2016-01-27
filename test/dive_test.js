@@ -565,7 +565,7 @@ exports['buhlmannequations'] = {
     }
 };
 
-/*
+
 exports['buhlmannplan'] = {
     setUp: function(done) {
         done();
@@ -578,9 +578,10 @@ exports['buhlmannplan'] = {
         newPlan.addFlat(25, 0.21, 0.0, 20);
         newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
         newPlan.addFlat(35, 0.21, 0.0, 15);
-        test.equals(3, newPlan.getCeiling(), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
+        test.equals(3, newPlan.getCeiling(1), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
+    /*
     'deco procedure': function (test) {
         test.expect(3);
         var buhlmann = dive.deco.buhlmann();
@@ -590,23 +591,23 @@ exports['buhlmannplan'] = {
         newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
         newPlan.addFlat(35, 0.21, 0.0, 20);
         newPlan.addDepthChange(35, 10, 0.21, 0.0, 2);
-        var decoProc = newPlan.calculateDecompression(0.21, 0.0);
+        var decoProc = newPlan.calculateDecompression(0.21, 0.0, 0.2, 0.8);
         test.equals(1, decoProc.length, 'should be one decompression stop at 3 meters for 2 minutes');
         test.equals(2, decoProc[0].time, 'should be one decompression stop at 3 meters for 2 minutes');
         test.equals(3, decoProc[0].depth, 'should be one decompression stop at 3 meters for 2 minutes');
         test.done();
     },
+    */
+
     'ndl': function (test) {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        var depthM = dive.feetToMeters(80)
-        newPlan.addDepthChange(0, depthM, 0.32, 0, 3)
-        newPlan.addFlat(depthM, 0.32, 0, 0)
-        //console.log("100 feet: " + newPlan.ndl(depthM, 0.32, 0.0, 0.66));
-        //console.log("70 feet: " + newPlan.ndl(dive.feetToMeters(70), 0.32, 0.0));
-        //console.log("30 feet: " + newPlan.ndl(dive.feetToMeters(30), 0.32, 0.0));
+        newPlan.addFlat(35, 0.32, 0.0, 30);
+        console.log("100 feet: " + newPlan.ndl(dive.feetToMeters(100), 0.32, 0.0, 0.8));
+        console.log("80 feet: " + newPlan.ndl(dive.feetToMeters(80), 0.32, 0.0, 0.8));
+        console.log("70 feet: " + newPlan.ndl(dive.feetToMeters(70), 0.32, 0.0, 0.8));
+        console.log("30 feet: " + newPlan.ndl(dive.feetToMeters(30), 0.32, 0.0, 0.8));
         test.done();
     }
 };
-*/

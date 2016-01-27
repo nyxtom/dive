@@ -519,12 +519,12 @@
         /// <returns>Approximate pressure of a given gas over the exposure rate and half time.</returns>
 
         //return schreiner equation with rate of change zero - indicating constant depth
-        var instantLoad = (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
-        //var slopeLoad = this.schreinerEquation(pBegin, pGas, time, halfTime, 0);
+        //var instantLoad = (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+        var slopeLoad = this.schreinerEquation(pBegin, pGas, time, halfTime, 0);
         //if (instantLoad < slopeLoad) {
         //    console.log("InstandLoad: " + instantLoad + ", SlopeLoad:" + slopeLoad);
         //}
-        return instantLoad;
+        return slopeLoad;
     };
 
     $self.schreinerEquation = function (pBegin, pGas, time, halfTime, gasRate) {
@@ -675,8 +675,12 @@
             pBegin = this.pHelium;
             this.pHelium = dive.schreinerEquation(pBegin, pGas, time, halfTime, gasRate);
 
+            var prevTotal = this.pTotal;
             // Calculate total loading
             this.pTotal = this.pNitrogen + this.pHelium;
+
+            //return difference - how much load was added
+            return this.pTotal - prevTotal;
         };
 
         buhlmannTissue.prototype.calculateCeiling = function (gf) {
@@ -698,15 +702,16 @@
         };
 
         plan.prototype.addFlat = function (depth, fO2, fHe, time) {
-            for (var i = 0; i < this.tissues.length; i++) {
-                this.tissues[i].addFlat(depth, fO2, fHe, time);
-            }
+            return this.addDepthChange(depth, depth, fO2, fHe, time);
         };
 
         plan.prototype.addDepthChange = function (startDepth, endDepth, fO2, fHe, time) {
+            var loadChange = 0.0;
             for (var i = 0; i < this.tissues.length; i++) {
-                this.tissues[i].addDepthChange(startDepth, endDepth, fO2, fHe, time);
+                var tissueChange = this.tissues[i].addDepthChange(startDepth, endDepth, fO2, fHe, time);
+                loadChange = loadChange + tissueChange;
             }
+            return loadChange;
         };
 
         plan.prototype.getCeiling = function (gf) {
@@ -714,6 +719,9 @@
             var ceiling = 0;
             for (var i = 0; i < this.tissues.length; i++) {
                 var tissueCeiling = this.tissues[i].calculateCeiling(gf);
+                if (tissueCeiling < 0) { //No negative ceilings.
+                    tissueCeiling = 0;
+                }
                 if (!ceiling || tissueCeiling > ceiling) {
                     ceiling = tissueCeiling;
                 }
@@ -745,16 +753,19 @@
             if (!maintainTissues) {
                 var origTissues = JSON.stringify(this.tissues);
             }
+            console.log("Start Ceiling:" + ceiling)
             while (ceiling > 0) {
                 var currentDepth = ceiling;
                 var nextDecoDepth = (ceiling - 3);
                 var time = 0;
-                while (ceiling > nextDecoDepth) {
+                var gf = gfLow + (gfChangePerMeter * (distanceToSurface - ceiling));
+                console.log("GradientFactor:"+gf + " Next decoDepth:" + nextDecoDepth);
+                while (ceiling > nextDecoDepth && time <= 10000) {
                     this.addFlat(currentDepth, fO2, fHe, time);
                     time++;
-                    var gf = gfLow + (gfChangePerMeter * (distanceToSurface - ceiling))
                     ceiling = this.getCeiling(gf);
                 }
+                console.log("Added deco stop at Depth " + currentDepth + " for time:" + time);
                 decoProc.push({'depth': currentDepth, 'time': time});
             };
             if (!maintainTissues) {
@@ -768,14 +779,17 @@
             var ceiling = this.getCeiling(gf);
             var origTissues = JSON.stringify(this.tissues);
             var time = 0;
-            while (ceiling <= 0) {
-                this.addFlat(depth, fO2, fHe, 1);
-                if (this.getCeiling(gf) > ceiling) {
-                    ceiling = this.getCeiling(gf);
-                }
+            var change = 1;
+            while (ceiling <= 0 && change != 0) {
+                change = this.addFlat(depth, fO2, fHe, 1);
+                ceiling = this.getCeiling(gf);
                 time++;
             }
             this.resetTissues(origTissues);
+            if (change == 0) {
+                console.log("NDL is practially infinity. Returning largest number we know of.");
+                return Math.POSITIVE_INFINITY;
+            }
             return time-1; //We went one minute past a ceiling of "0"
         };
 
