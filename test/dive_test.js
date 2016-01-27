@@ -58,7 +58,7 @@ exports['dac'] = {
     },
     'args': function(test) {
         test.expect(1);
-        test.equal(dive.dac(2500, 1300, 50), 24, 'should be 24 psi/min')
+        test.equal(dive.dac(2500, 1300, 50), 24, 'should be 24 psi/min');
         test.done();
     }
 };
