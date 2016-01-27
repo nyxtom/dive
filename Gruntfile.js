@@ -3,17 +3,18 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
-    test: {
-      files: ['test/**/*.js']
+    nodeunit: {
+      all: ['test/**/*.js']
     },
     lint: {
       files: ['grunt.js', 'lib/**/*.js', 'test/**/*.js']
     },
     watch: {
-      files: '<config:lint.files>',
-      tasks: 'default'
+      files: ['<%= lint.files %>'],
+      tasks: ['default']
     },
     jshint: {
+      all: ['<%= lint.files %>'],
       options: {
         curly: true,
         eqeqeq: true,
@@ -33,8 +34,13 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-jshint')
+  grunt.loadNpmTasks('grunt-contrib-watch')
+  grunt.loadNpmTasks('grunt-contrib-nodeunit')
+
   // Default task.
-  grunt.registerTask('default', 'lint test');
-  grunt.registerTask('travis', 'test');
+  grunt.registerTask('test', ['nodeunit']);
+  grunt.registerTask('default', ['jshint', 'test']);
+  grunt.registerTask('travis', ['test']);
 
 };

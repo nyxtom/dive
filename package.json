@@ -1,7 +1,7 @@
 {
   "name": "scuba-dive",
   "description": "Various standard scuba diving algorithms, formulas, calculations and device management.",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "homepage": "https://github.com/nyxtom/dive",
   "author": {
     "name": "Thomas Holloway",
@@ -23,14 +23,17 @@
   ],
   "main": "lib/dive",
   "engines": {
-    "node": ">= 0.6.0"
+    "node": ">= 0.8.0"
   },
   "scripts": {
     "test": "grunt test",
     "travis": "grunt travis --verbose"
   },
   "devDependencies": {
-    "grunt": "~0.3.17"
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "^0.12.0",
+    "grunt-contrib-nodeunit": "^0.4.1",
+    "grunt-contrib-watch": "^0.6.1"
   },
   "keywords": []
 }

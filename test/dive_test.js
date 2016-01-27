@@ -51,14 +51,13 @@ exports['metersToFeet'] = {
         test.done();
     }
 };
-
 exports['dac'] = {
     setUp: function(done) {
         done();
     },
     'args': function(test) {
         test.expect(1);
-        test.equal(dive.dac(2500, 1300, 50), 24, 'should be 24 psi/min')
+        test.equal(dive.dac(2500, 1300, 50), 24, 'should be 24 psi/min');
         test.done();
     }
 };
@@ -455,10 +454,10 @@ exports['buhlmannplan'] = {
         test.expect(1);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.79, 0.0, 2);
-        newPlan.addFlat(25, 0.79, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.79, 0.0, 2);
-        newPlan.addFlat(35, 0.79, 0.0, 15);
+        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
+        newPlan.addFlat(25, 0.21, 0.0, 20);
+        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
+        newPlan.addFlat(35, 0.21, 0.0, 15);
         test.equals(3, newPlan.getCeiling(), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
@@ -466,12 +465,12 @@ exports['buhlmannplan'] = {
         test.expect(3);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.79, 0.0, 2);
-        newPlan.addFlat(25, 0.79, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.79, 0.0, 2);
-        newPlan.addFlat(35, 0.79, 0.0, 20);
-        newPlan.addDepthChange(35, 10, 0.79, 0.0, 2);
-        var decoProc = newPlan.calculateDecompression(0.79, 0.0);
+        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
+        newPlan.addFlat(25, 0.21, 0.0, 20);
+        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
+        newPlan.addFlat(35, 0.21, 0.0, 20);
+        newPlan.addDepthChange(35, 10, 0.21, 0.0, 2);
+        var decoProc = newPlan.calculateDecompression(0.21, 0.0);
         test.equals(1, decoProc.length, 'should be one decompression stop at 3 meters for 2 minutes');
         test.equals(2, decoProc[0].time, 'should be one decompression stop at 3 meters for 2 minutes');
         test.equals(3, decoProc[0].depth, 'should be one decompression stop at 3 meters for 2 minutes');
@@ -481,10 +480,10 @@ exports['buhlmannplan'] = {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.79, 0.0, 2);
-        newPlan.addFlat(25, 0.79, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.79, 0.0, 2);
-        console.log(newPlan.ndl(0.79, 0.0));
+        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
+        newPlan.addFlat(25, 0.21, 0.0, 20);
+        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
+        //console.log(newPlan.ndl(0.21, 0.0));
         test.done();
     }
 };
