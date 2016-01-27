@@ -570,7 +570,7 @@ exports['buhlmannplan'] = {
     setUp: function(done) {
         done();
     },
-    /*
+
     'simple depth change analysis': function (test) {
         test.expect(1);
         var buhlmann = dive.deco.buhlmann();
@@ -579,7 +579,7 @@ exports['buhlmannplan'] = {
         newPlan.addFlat(25, 0.21, 0.0, 20);
         newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
         newPlan.addFlat(35, 0.21, 0.0, 15);
-        test.equals(3, newPlan.getCeiling(1), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
+        test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
     'deco procedure': function (test) {
@@ -591,13 +591,13 @@ exports['buhlmannplan'] = {
         newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
         newPlan.addFlat(35, 0.21, 0.0, 20);
         newPlan.addDepthChange(35, 10, 0.21, 0.0, 2);
-        var decoProc = newPlan.calculateDecompression(0.21, 0.0, 0.2, 0.8);
-        test.equals(1, decoProc.length, 'should be one decompression stop at 3 meters for 2 minutes');
-        test.equals(2, decoProc[0].time, 'should be one decompression stop at 3 meters for 2 minutes');
-        test.equals(3, decoProc[0].depth, 'should be one decompression stop at 3 meters for 2 minutes');
+        var gradientFactor = 1.5;
+        var decoProc = newPlan.calculateDecompression(0.21, 0.0, gradientFactor, gradientFactor);
+        test.equals(1, decoProc.length, 'should be one only decompression stop');
+        test.equals(4, decoProc[0].time, 'decompression stop should only be for 4 minutes');
+        test.equals(3, decoProc[0].depth, 'decompression stop should be at 3 meters depth');
         test.done();
     },
-    */
 
     'ndl rule of 130 for 32 percent': function (test) {
         test.expect(0);
