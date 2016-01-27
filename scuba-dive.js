@@ -518,10 +518,16 @@
         /// <param name="halfTime" type="Number">Half time of the given gas exposure.</param>
         /// <returns>Approximate pressure of a given gas over the exposure rate and half time.</returns>
 
-        return (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+        //return schreiner equation with rate of change zero - indicating constant depth
+        //var instantLoad = (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+        var slopeLoad = this.schreinerEquation(pBegin, pGas, time, halfTime, 0);
+        //if (instantLoad < slopeLoad) {
+        //    console.log("InstandLoad: " + instantLoad + ", SlopeLoad:" + slopeLoad);
+        //}
+        return slopeLoad;
     };
 
-    $self.schreinerEquation = function (gasRate, time, timeConstant, pGas, pBegin) {
+    $self.schreinerEquation = function (pBegin, pGas, time, halfTime, gasRate) {
         /// <summary>Calculates the end compartment inert gas pressure in bar.</summary>
         /// <param name="gasRate" type="Number">Rate of descent/ascent in bar times the fraction of inert gas.</param>
         /// <param name="time" type="Number">Time of exposure or interval in minutes.</param>
@@ -529,7 +535,7 @@
         /// <param name="pGas" type="Number">Partial pressure of inspired inert gas.</param>
         /// <param name="pBegin" type="Number">Initial compartment inert gas pressure.</param>
         /// <returns>The end compartment inert gas pressure in bar.</returns>
-
+        var timeConstant = Math.log(2)/halfTime
         return (pGas + (gasRate * (time - (1.0/timeConstant))) - ((pGas - pBegin - (gasRate / timeConstant)) * Math.exp(-timeConstant * time)));
     };
 
@@ -649,38 +655,25 @@
         };
 
         buhlmannTissue.prototype.addFlat = function (depth, fO2, fHe, time) {
-            //calculate nitrogen loading
-            var fN2 = (1 - fO2) - fHe
-            var pGas = dive.gasPressureBreathingInBars(depth, fN2, this.isFreshWater);
-            var pBegin = this.pNitrogen;
-            var halfTime = this.N2HalfTime();
-            this.pNitrogen = dive.instantaneousEquation(pBegin, pGas, time, halfTime);
-
-            //calculate helium loading
-            pGas = dive.gasPressureBreathingInBars(depth, fHe, this.isFreshWater);
-            pBegin = this.pHelium;
-            halfTime = this.HeHalfTime();
-            this.pHelium = dive.instantaneousEquation(pBegin, pGas, time, halfTime);
-
-            // Calculate total loading
-            this.pTotal = this.pNitrogen + this.pHelium;
+            //This is a helper into depth change - with start/end depths identical
+            this.addDepthChange(depth, depth, fO2, fHe, time);
         };
 
         buhlmannTissue.prototype.addDepthChange = function (startDepth, endDepth, fO2, fHe, time) {
             var fN2 = (1 - fO2) - fHe
             // Calculate nitrogen loading
             var gasRate = dive.gasRateInBarsPerMinute(startDepth, endDepth, time, fN2, this.isFreshWater);
-            var timeConstant = Math.log(2) / this.N2HalfTime(); // half-time constant = log2/half-time in minutes
+            var halfTime = this.N2HalfTime(); // half-time constant = log2/half-time in minutes
             var pGas = dive.gasPressureBreathingInBars(endDepth, fN2, this.isFreshWater); // initial ambient pressure
             var pBegin = this.pNitrogen; // initial compartment inert gas pressure in bar
-            this.pNitrogen = dive.schreinerEquation(gasRate, time, timeConstant, pGas, pBegin);
+            this.pNitrogen = dive.schreinerEquation(pBegin, pGas, time, halfTime, gasRate);
 
             // Calculate helium loading
             gasRate = dive.gasRateInBarsPerMinute(startDepth, endDepth, time, fHe, this.isFreshWater);
-            timeConstant = Math.log(2) / this.HeHalfTime();
+            halfTime = this.HeHalfTime();
             pGas = dive.gasPressureBreathingInBars(endDepth, fHe, this.isFreshWater);
             pBegin = this.pHelium;
-            this.pHelium = dive.schreinerEquation(gasRate, time, timeConstant, pGas, pBegin);
+            this.pHelium = dive.schreinerEquation(pBegin, pGas, time, halfTime, gasRate);
 
             // Calculate total loading
             this.pTotal = this.pNitrogen + this.pHelium;

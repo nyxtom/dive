@@ -486,6 +486,7 @@ exports['buhlmannequations'] = {
         }
         test.done();
     },
+
     'schreiner buhlmann equation': function (test) {
         test.expect(165);
         var buhlmann = dive.deco.buhlmann();
@@ -494,54 +495,56 @@ exports['buhlmannequations'] = {
             // to 7 bar depth (60 meters) times inert gas percentage (0.79)
             // for 1 minute time
             // for a tissue with half-time of 1 minute
-            var prevLoad = 10000;
-            var prevLoadChange = 100;
+            var prevLoad = 0;
             for (var time = 1; time <= 10; time++) {
                 var load = dive.schreinerEquation(1, time, Math.log(2)/halfTime, 7 * 0.79, 0);
-                var loadChange = load - prevLoad;
-                test.ok(true, loadChange < prevLoadChange, 'over time, the change in tissue load must decrease.');
-                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+                test.ok(load > prevLoad, 'over time, the tissue load must decrease for a constant half-life and depth.');
+                if (load <= prevLoad) {
+                    console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+                }
                 prevLoad = load;
-                prevLoadChange = loadChange;
             }
         }
 
         var prevLoad = 10000;
-        var prevLoadChange = 100;
         for (var halfTime = 1; halfTime < 16; halfTime++) {
             //Load tissue from 0 previous load of this gas,
             // to 7 bar depth (60 meters) times inert gas percentage (0.79)
             // for 1 minute time
             // for a tissue with half-time of 1 minute
             var load = dive.schreinerEquation(1, 10, Math.log(2)/halfTime, 7 * 0.79, 0);
-            var loadChange = load - prevLoad;
-            test.ok(true, loadChange < prevLoadChange, 'over increasing half-lives, the change in tissue load must decrease for constant time.');
-            //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+            test.ok(load < prevLoad, 'over increasing half-lives, the tissue load must decrease for constant time.');
+            if (load >= prevLoad) {
+                console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+            }
             prevLoad = load;
-            prevLoadChange = loadChange;
         }
         test.done();
     },
-    'comparison of slope loading vs flat loading': function (test) {
+
+
+     'comparison of slope loading vs flat loading': function (test) {
         test.expect(150);
         var buhlmann = dive.deco.buhlmann();
+        var targetGasPressure = 7 * 0.79;
         for (var halfTime = 1; halfTime < 16; halfTime++) {
             //Load tissue from 0 previous load of this gas,
             // to 7 bar depth (60 meters) times inert gas percentage (0.79)
             // for 1 minute time
             // for a tissue with half-time of 1 minute
             for (var time = 1; time <= 10; time++) {
-                var slopeLoad = dive.schreinerEquation(1, time, Math.log(2)/halfTime, 7 * 0.79, 0);
-                var flatLoad = dive.instantaneousEquation(0, 7 * 0.79, time, halfTime)
-                test.ok(true, slopeLoad < flatLoad, 'for any depth, the load going down a slope, should be far lower than spending all time at that depth');
-                console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") slope load-> " + slopeLoad + "  flatLoad->" + flatLoad);
+                var gasRate = targetGasPressure/time;
+                var slopeLoad = dive.schreinerEquation(0, 0, time, halfTime, gasRate);
+                var flatLoad = dive.instantaneousEquation(0, targetGasPressure, time, halfTime)
+                test.ok(slopeLoad < flatLoad, 'for any depth, the load going down a slope, should be far lower than spending all time at that depth');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ", GasRate: "+gasRate+") slope load-> " + slopeLoad + "  flatLoad->" + flatLoad);
             }
         }
         test.done();
     }
 };
 
-
+/*
 exports['buhlmannplan'] = {
     setUp: function(done) {
         done();
@@ -585,3 +588,4 @@ exports['buhlmannplan'] = {
         test.done();
     }
 };
+*/
