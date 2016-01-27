@@ -433,7 +433,7 @@ exports['gasPressureBreathingInBars'] = {
         var waterVapourPressure = dive.constants.vapourPressure.lungsBreathing.current();
         test.equals(Math.round(waterVapourPressure * 10000) / 10000, 0.0567, 'water vapour pressure in the lungs should be about 0.0567 bars');
         var bars = dive.gasPressureBreathingInBars(10, 0.79);
-        test.equals(Math.round(bars * 1000) / 1000, 0.753, 'breathing 79% N2 at 10 meters in salt water should be about 0.753 bars');
+        test.equals(Math.round(bars * 1000) / 1000, 1.588, 'breathing 79% N2 at 10 meters in salt water should be about 1.588 bars (remember to add 1 bar for the surface)');
         test.done();
     },
     'breathing 79% N2 at 10 meters in fresh water': function(test) {
@@ -441,15 +441,136 @@ exports['gasPressureBreathingInBars'] = {
         var waterVapourPressure = dive.constants.vapourPressure.lungsBreathing.current();
         test.equals(Math.round(waterVapourPressure * 10000) / 10000, 0.0567, 'water vapour pressure in the lungs should be about 0.0567 bars');
         var bars = dive.gasPressureBreathingInBars(10, 0.79, true);
-        test.equals(Math.round(bars * 100) / 100, 0.73, 'breathing 79% N2 at 10 meters in fresh water should be about 0.73 bars');
+        test.equals(Math.round(bars * 100) / 100, 1.56, 'breathing 79% N2 at 10 meters in fresh water should be about 1.56 bars (remember to add 1 bar for the surface)');
         test.done();
     }
 };
+
+exports['buhlmannequations'] = {
+    setUp: function(done) {
+        done();
+    },
+    'instantaneous buhlmann equation': function (test) {
+        test.expect(165);
+        var buhlmann = dive.deco.buhlmann();
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var prevLoad = 10000;
+            var prevLoadChange = 100;
+            for (var time = 1; time <= 10; time++) {
+                var load = dive.instantaneousEquation(0, 7 * 0.79, time, halfTime);
+                var loadChange = load - prevLoad;
+                test.ok(true, loadChange < prevLoadChange, 'over time, the change in tissue load must decrease.');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+                prevLoad = load;
+                prevLoadChange = loadChange;
+            }
+        }
+
+        var prevLoad = 10000;
+        var prevLoadChange = 100;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var load = dive.instantaneousEquation(0, 7 * 0.79, 10, halfTime);
+            var loadChange = load - prevLoad;
+            test.ok(true, loadChange < prevLoadChange, 'over increasing half-lives, the change in tissue load must decrease for constant time.');
+            //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+            prevLoad = load;
+            prevLoadChange = loadChange;
+        }
+        test.done();
+    },
+
+    'schreiner buhlmann equation': function (test) {
+        test.expect(165);
+        var buhlmann = dive.deco.buhlmann();
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var prevLoad = 0;
+            for (var time = 1; time <= 10; time++) {
+                var load = dive.schreinerEquation(1, time, Math.log(2)/halfTime, 7 * 0.79, 0);
+                test.ok(load > prevLoad, 'over time, the tissue load must decrease for a constant half-life and depth.');
+                if (load <= prevLoad) {
+                    console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+                }
+                prevLoad = load;
+            }
+        }
+
+        var prevLoad = 10000;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            var load = dive.schreinerEquation(1, 10, Math.log(2)/halfTime, 7 * 0.79, 0);
+            test.ok(load < prevLoad, 'over increasing half-lives, the tissue load must decrease for constant time.');
+            if (load >= prevLoad) {
+                console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ") load-> " + load);
+            }
+            prevLoad = load;
+        }
+        test.done();
+    },
+
+
+     'comparison of slope loading vs flat loading': function (test) {
+        test.expect(150);
+        var buhlmann = dive.deco.buhlmann();
+        var targetGasPressure = 7 * 0.79;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            for (var time = 1; time <= 10; time++) {
+                var gasRate = targetGasPressure/time;
+                var slopeLoad = dive.schreinerEquation(0, 0, time, halfTime, gasRate);
+                var flatLoad = dive.instantaneousEquation(0, targetGasPressure, time, halfTime)
+                test.ok(slopeLoad < flatLoad, 'for any depth, the load going down a slope, should be far lower than spending all time at that depth');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ", GasRate: "+gasRate+") slope load-> " + slopeLoad + "  flatLoad->" + flatLoad);
+            }
+        }
+        test.done();
+    },
+
+    'instantaneous equation is shreiner equation with rate zero': function (test) {
+        test.expect(150);
+        var buhlmann = dive.deco.buhlmann();
+        var targetGasPressure = 7 * 0.79;
+        for (var halfTime = 1; halfTime < 16; halfTime++) {
+            //Load tissue from 0 previous load of this gas,
+            // to 7 bar depth (60 meters) times inert gas percentage (0.79)
+            // for 1 minute time
+            // for a tissue with half-time of 1 minute
+            for (var time = 1; time <= 10; time++) {
+                var gasRate = targetGasPressure/time;
+                var slopeLoad = dive.schreinerEquation(0, targetGasPressure, time, halfTime, 0);
+                var flatLoad = dive.instantaneousEquation(0, targetGasPressure, time, halfTime)
+                var diff = Math.abs(slopeLoad-flatLoad)
+                test.ok(diff <= 0.0000001, 'the load from slope equation should be identical to load from flat equation, when slope == 0');
+                //console.log("Tissue (halfTime:" + halfTime + ", Time:" + time + ", GasRate: "+gasRate+") slope load-> " + slopeLoad + "  flatLoad->" + flatLoad);
+            }
+        }
+        test.done();
+    }
+};
+
 
 exports['buhlmannplan'] = {
     setUp: function(done) {
         done();
     },
+
     'simple depth change analysis': function (test) {
         test.expect(1);
         var buhlmann = dive.deco.buhlmann();
@@ -458,7 +579,7 @@ exports['buhlmannplan'] = {
         newPlan.addFlat(25, 0.21, 0.0, 20);
         newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
         newPlan.addFlat(35, 0.21, 0.0, 15);
-        test.equals(3, newPlan.getCeiling(), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
+        test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
     'deco procedure': function (test) {
@@ -470,20 +591,47 @@ exports['buhlmannplan'] = {
         newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
         newPlan.addFlat(35, 0.21, 0.0, 20);
         newPlan.addDepthChange(35, 10, 0.21, 0.0, 2);
-        var decoProc = newPlan.calculateDecompression(0.21, 0.0);
-        test.equals(1, decoProc.length, 'should be one decompression stop at 3 meters for 2 minutes');
-        test.equals(2, decoProc[0].time, 'should be one decompression stop at 3 meters for 2 minutes');
-        test.equals(3, decoProc[0].depth, 'should be one decompression stop at 3 meters for 2 minutes');
+        var gradientFactor = 1.5;
+        var decoProc = newPlan.calculateDecompression(0.21, 0.0, gradientFactor, gradientFactor);
+        test.equals(1, decoProc.length, 'should be one only decompression stop');
+        test.equals(4, decoProc[0].time, 'decompression stop should only be for 4 minutes');
+        test.equals(3, decoProc[0].depth, 'decompression stop should be at 3 meters depth');
         test.done();
     },
-    'ndl': function (test) {
+
+    'ndl rule of 130 for 32 percent': function (test) {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
-        var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
-        newPlan.addFlat(25, 0.21, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
-        //console.log(newPlan.ndl(0.21, 0.0));
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
+        //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
+        for (var i=100; i > 50; i-=10) {
+            var ndlTime = newPlan.ndl(dive.feetToMeters(i), 0.32, 0.0, gradientFactor);
+            var closeTo130 = ndlTime + i;
+            console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
+        }
+        test.done();
+    },
+
+    'ndl for air': function (test) {
+        //Compare PADI DSAT table for reference:http://www.divetalking.com/wp-content/uploads/2009/11/AIR-RDP1.jpg
+        test.expect(12);
+        var buhlmann = dive.deco.buhlmann();
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
+        //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
+        test.equals(8, newPlan.ndl(dive.feetToMeters(140), 0.21, 0.0, gradientFactor), "NDL for 140 feet should be close to 7 minutes");
+        test.equals(9, newPlan.ndl(dive.feetToMeters(130), 0.21, 0.0, gradientFactor), "NDL for 130 feet should be close to  9 minutes");
+        test.equals(10, newPlan.ndl(dive.feetToMeters(120), 0.21, 0.0, gradientFactor), "NDL for 120 feet should be close to 12 minutes");
+        test.equals(12, newPlan.ndl(dive.feetToMeters(110), 0.21, 0.0, gradientFactor), "NDL for 110 feet should be close to 15 minutes");
+        test.equals(15, newPlan.ndl(dive.feetToMeters(100), 0.21, 0.0, gradientFactor), "NDL for 100 feet should be close to 19 minutes");
+        test.equals(18, newPlan.ndl(dive.feetToMeters(90), 0.21, 0.0, gradientFactor), "NDL for 90 feet should be close to 24 minutes");
+        test.equals(24, newPlan.ndl(dive.feetToMeters(80), 0.21, 0.0, gradientFactor), "NDL for 80 feet should be close to 29 minutes");
+        test.equals(33, newPlan.ndl(dive.feetToMeters(70), 0.21, 0.0, gradientFactor), "NDL for 70 feet should be close to 38 minutes");
+        test.equals(45, newPlan.ndl(dive.feetToMeters(60), 0.21, 0.0, gradientFactor), "NDL for 60 feet should be close to 54 minutes");
+        test.equals(67, newPlan.ndl(dive.feetToMeters(50), 0.21, 0.0, gradientFactor), "NDL for 50 feet should be close to 75 minutes");
+        test.equals(120, newPlan.ndl(dive.feetToMeters(40), 0.21, 0.0, gradientFactor), "NDL for 40 feet should be close to 129 minutes");
+        test.equals(179, newPlan.ndl(dive.feetToMeters(35), 0.21, 0.0, gradientFactor), "NDL for 35 feet should be close to 188 minutes");
         test.done();
     }
 };

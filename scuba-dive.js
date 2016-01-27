@@ -506,7 +506,8 @@
         /// <returns>The gas pressure in bars taken in with each breath (accounting for water vapour pressure in the lungs).</returns>
 
         var bars = $self.depthInMetersToBars(depth, isFreshWater);
-        bars = bars - $self.constants.altitudePressure.current() - $self.constants.vapourPressure.lungsBreathing.current();
+        //bars = bars - $self.constants.altitudePressure.current() - $self.constants.vapourPressure.lungsBreathing.current();
+        //console.log("Depth:"+ depth + ", bars:" + bars + " fGas:" + fGas + ", ppGas:" + (bars*fGas));
         return bars * fGas;
     };
 
@@ -518,18 +519,24 @@
         /// <param name="halfTime" type="Number">Half time of the given gas exposure.</param>
         /// <returns>Approximate pressure of a given gas over the exposure rate and half time.</returns>
 
-        return (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+        //return schreiner equation with rate of change zero - indicating constant depth
+        //var instantLoad = (pBegin + (pGas - pBegin) * (1 - Math.pow(2, (-time/halfTime))));
+        var slopeLoad = this.schreinerEquation(pBegin, pGas, time, halfTime, 0);
+        //if (instantLoad < slopeLoad) {
+        //    console.log("InstandLoad: " + instantLoad + ", SlopeLoad:" + slopeLoad);
+        //}
+        return slopeLoad;
     };
 
-    $self.schreinerEquation = function (gasRate, time, timeConstant, pGas, pBegin) {
+    $self.schreinerEquation = function (pBegin, pGas, time, halfTime, gasRate) {
         /// <summary>Calculates the end compartment inert gas pressure in bar.</summary>
         /// <param name="gasRate" type="Number">Rate of descent/ascent in bar times the fraction of inert gas.</param>
         /// <param name="time" type="Number">Time of exposure or interval in minutes.</param>
         /// <param name="timeConstant" type="Number">Log2/half-time in minute.</param>
-        /// <param name="pGas" type="Number">Partial pressure of inspired inert gas.</param>
+        /// <param name="pGas" type="Number">Partial pressure of inert gas at CURRENT depth (not target depth - but starting depth where change begins.)</param>
         /// <param name="pBegin" type="Number">Initial compartment inert gas pressure.</param>
         /// <returns>The end compartment inert gas pressure in bar.</returns>
-
+        var timeConstant = Math.log(2)/halfTime
         return (pGas + (gasRate * (time - (1.0/timeConstant))) - ((pGas - pBegin - (gasRate / timeConstant)) * Math.exp(-timeConstant * time)));
     };
 
@@ -551,7 +558,6 @@
     $self = dive.deco = dive.deco || {};
 
     $self.buhlmann = function() {
-
         var algorithm = {};
         algorithm.ZH16ATissues = [
             // N2HalfTime, N2AValue, N2BValue, HeHalfTime, HeAValue, HeBValue
@@ -650,42 +656,45 @@
         };
 
         buhlmannTissue.prototype.addFlat = function (depth, fO2, fHe, time) {
-            var fN2 = (1 - fO2) - fHe
-            var pGas = dive.gasPressureBreathingInBars(depth, fN2, this.isFreshWater);
-            var pBegin = this.pNitrogen;
-            var halfTime = this.N2HalfTime();
-            this.pNitrogen = dive.instantaneousEquation(pBegin, pGas, time, halfTime);
-
-            // Calculate total loading
-            this.pTotal = this.pNitrogen + this.pHelium;
+            //This is a helper into depth change - with start/end depths identical
+            this.addDepthChange(depth, depth, fO2, fHe, time);
         };
 
         buhlmannTissue.prototype.addDepthChange = function (startDepth, endDepth, fO2, fHe, time) {
             var fN2 = (1 - fO2) - fHe
             // Calculate nitrogen loading
             var gasRate = dive.gasRateInBarsPerMinute(startDepth, endDepth, time, fN2, this.isFreshWater);
-            var timeConstant = Math.log(2) / this.N2HalfTime(); // half-time constant = log2/half-time in minutes
+            var halfTime = this.N2HalfTime(); // half-time constant = log2/half-time in minutes
             var pGas = dive.gasPressureBreathingInBars(endDepth, fN2, this.isFreshWater); // initial ambient pressure
             var pBegin = this.pNitrogen; // initial compartment inert gas pressure in bar
-            this.pNitrogen = dive.schreinerEquation(gasRate, time, timeConstant, pGas, pBegin);
+            this.pNitrogen = dive.schreinerEquation(pBegin, pGas, time, halfTime, gasRate);
+            //console.log("pBegin=" + pBegin + ", pGas=" + pGas + ", time=" + time +", halfTime=" + halfTime + ", gasRate=" + gasRate + ", result=" + this.pNitrogen);
 
             // Calculate helium loading
             gasRate = dive.gasRateInBarsPerMinute(startDepth, endDepth, time, fHe, this.isFreshWater);
-            timeConstant = Math.log(2) / this.HeHalfTime();
+            halfTime = this.HeHalfTime();
             pGas = dive.gasPressureBreathingInBars(endDepth, fHe, this.isFreshWater);
             pBegin = this.pHelium;
-            this.pHelium = dive.schreinerEquation(gasRate, time, timeConstant, pGas, pBegin);
+            this.pHelium = dive.schreinerEquation(pBegin, pGas, time, halfTime, gasRate);
 
+            var prevTotal = this.pTotal;
             // Calculate total loading
             this.pTotal = this.pNitrogen + this.pHelium;
+
+            //return difference - how much load was added
+            return this.pTotal - prevTotal;
         };
 
-        buhlmannTissue.prototype.calculateCeiling = function () {
+        buhlmannTissue.prototype.calculateCeiling = function (gf) {
+            gf = gf || 1.0
             var a = ((this.N2AValue() * this.pNitrogen) + (this.HeAValue() * this.pHelium)) / (this.pTotal);
             var b = ((this.N2BValue() * this.pNitrogen) + (this.HeBValue() * this.pHelium)) / (this.pTotal);
-            var bars = (this.pTotal - a) * b;
+            var bars = (this.pTotal - (a * gf)) / ((gf / b) + 1.0 - gf);
+            //var bars = (this.pTotal - a) * b;
+
             bars = bars - this.absPressure;
             this.ceiling = dive.barToDepthInMeters(bars, this.isFreshWater);
+            //console.log("a:" + a + ", b:" + b + ", bars:" + bars + " ceiling:" + this.ceiling);
             return Math.round(this.ceiling);
         };
 
@@ -698,21 +707,23 @@
         };
 
         plan.prototype.addFlat = function (depth, fO2, fHe, time) {
-            for (var i = 0; i < this.tissues.length; i++) {
-                this.tissues[i].addFlat(depth, fO2, fHe, time);
-            }
+            return this.addDepthChange(depth, depth, fO2, fHe, time);
         };
 
         plan.prototype.addDepthChange = function (startDepth, endDepth, fO2, fHe, time) {
+            var loadChange = 0.0;
             for (var i = 0; i < this.tissues.length; i++) {
-                this.tissues[i].addDepthChange(startDepth, endDepth, fO2, fHe, time);
+                var tissueChange = this.tissues[i].addDepthChange(startDepth, endDepth, fO2, fHe, time);
+                loadChange = loadChange + tissueChange;
             }
+            return loadChange;
         };
 
-        plan.prototype.getCeiling = function () {
+        plan.prototype.getCeiling = function (gf) {
+            gf = gf || 1.0
             var ceiling = 0;
             for (var i = 0; i < this.tissues.length; i++) {
-                var tissueCeiling = this.tissues[i].calculateCeiling();
+                var tissueCeiling = this.tissues[i].calculateCeiling(gf);
                 if (!ceiling || tissueCeiling > ceiling) {
                     ceiling = tissueCeiling;
                 }
@@ -731,22 +742,32 @@
                 }
             }
         }
-        
-        plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues) {
+
+        plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues, gfLow, gfHigh) {
+            gfLow = gfLow || 1.0;
+            gfHigh = gfHigh || 1.0;
             var decoProc = [];
-            var ceiling = this.getCeiling();
+            var ceiling = this.getCeiling(gfLow);
+            var gfDiff = gfHigh-gfLow; //find variance in gradient factor
+            var distanceToSurface = ceiling
+            var gfChangePerMeter = gfDiff/distanceToSurface
+
             if (!maintainTissues) {
                 var origTissues = JSON.stringify(this.tissues);
             }
+            //console.log("Start Ceiling:" + ceiling + " with GF:" + gfLow)
             while (ceiling > 0) {
                 var currentDepth = ceiling;
                 var nextDecoDepth = (ceiling - 3);
-                var time = 0;
-                while (ceiling > nextDecoDepth) {
+                var time = 1;
+                var gf = gfLow + (gfChangePerMeter * (distanceToSurface - ceiling));
+                //console.log("GradientFactor:"+gf + " Next decoDepth:" + nextDecoDepth);
+                while (ceiling > nextDecoDepth && time <= 10000) {
                     this.addFlat(currentDepth, fO2, fHe, time);
                     time++;
-                    ceiling = this.getCeiling();
+                    ceiling = this.getCeiling(gf);
                 }
+                //console.log("Added deco stop at Depth " + currentDepth + " for time:" + time);
                 decoProc.push({'depth': currentDepth, 'time': time});
             };
             if (!maintainTissues) {
@@ -755,19 +776,26 @@
             return decoProc;
         };
 
-        plan.prototype.ndl = function (fO2, fHe) {
-            var ceiling = this.getCeiling();
-            var currentDepth = ceiling;
+        plan.prototype.ndl = function (depth, fO2, fHe, gf) {
+            gf = gf || 1.0
+            var ceiling = this.getCeiling(gf);
+            //console.log("Ceiling:" +ceiling);
+
             var origTissues = JSON.stringify(this.tissues);
             var time = 0;
-            while (ceiling < 0) {
-                this.addFlat(ceiling + 3, fO2, fHe, 1);
-                ceiling = this.getCeiling();
-                console.log(ceiling);
+            var change = 1;
+            while (ceiling < 0 && change > 0) {
+                //console.log("Ceiling:" +ceiling);
+                change = this.addFlat(depth, fO2, fHe, gf);
+                ceiling = this.getCeiling(gf);
                 time++;
             }
             this.resetTissues(origTissues);
-            return time;
+            if (change == 0) {
+                console.log("NDL is practially infinity. Returning largest number we know of.");
+                return Math.POSITIVE_INFINITY;
+            }
+            return time; //We went one minute past a ceiling of "0"
         };
 
         algorithm.buhlmannTissue = buhlmannTissue;
