@@ -540,6 +540,28 @@
         return (pGas + (gasRate * (time - (1.0/timeConstant))) - ((pGas - pBegin - (gasRate / timeConstant)) * Math.exp(-timeConstant * time)));
     };
 
+    $self.gas = function(fO2, fHe) {
+        var gas = {};
+        gas.fO2 = fO2;
+        gas.fHe = fHe;
+        gas.fN2 = (1 - (this.fO2 + this.fHe));
+
+        gas.modInMeters = function(ppO2) {
+            return 10 * ((ppO2 / fO2) - 1);
+        };
+
+        gas.endInMeters = function(depth) {
+            return (depth+10) * (1 - this.fHe) - 10;
+        };
+
+        gas.depthFromEndInMeters = function(equivalentNarcoticDepth) {
+            return ((equivalentNarcoticDepth + 10)/(1-this.fHe)) - 10;
+        };
+
+        return gas;
+    };
+
+
 }).call(this);
 
 (function () {
@@ -704,7 +726,18 @@
             for (var i = 0; i < this.table.length; i++) {
                 this.tissues[i] = new buhlmannTissue(this.table[i], absPressure, isFreshWater);
             }
+            this.bottomGasses = {};
+            this.decoGasses = {};
+            this.stages = [];
         };
+
+        plan.prototype.addBottomGas = function(gasName, fO2, fHe) {
+            this.bottomGasses[gasName] = gas(fO2, fHe);
+        }
+
+        plan.prototype.addDecoGas = function(gasName, fO2, fHe) {
+            this.decoGasses[gasName] = gas(fO2, fHe);
+        }
 
         plan.prototype.addFlat = function (depth, fO2, fHe, time) {
             return this.addDepthChange(depth, depth, fO2, fHe, time);
@@ -743,18 +776,18 @@
             }
         }
 
-        plan.prototype.calculateDecompression = function (fO2, fHe, maintainTissues, gfLow, gfHigh) {
+        plan.prototype.calculateDecompression = function (fromDepth, gasses, maintainTissues, gfLow, gfHigh) {
             gfLow = gfLow || 1.0;
             gfHigh = gfHigh || 1.0;
             var decoProc = [];
-            var ceiling = this.getCeiling(gfLow);
             var gfDiff = gfHigh-gfLow; //find variance in gradient factor
-            var distanceToSurface = ceiling
+            var distanceToSurface = fromDepth;
             var gfChangePerMeter = gfDiff/distanceToSurface
 
             if (!maintainTissues) {
                 var origTissues = JSON.stringify(this.tissues);
             }
+            var ceiling = this.getCeiling(gfLow);
             //console.log("Start Ceiling:" + ceiling + " with GF:" + gfLow)
             while (ceiling > 0) {
                 var currentDepth = ceiling;

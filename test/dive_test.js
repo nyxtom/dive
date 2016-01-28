@@ -446,6 +446,27 @@ exports['gasPressureBreathingInBars'] = {
     }
 };
 
+
+exports['gasses'] = {
+    setUp: function (done) {
+        done();
+    },
+
+    'gas mod': function (test) {
+        test.expect(4);
+        var gasAir = dive.gas(0.21, 0.0);
+        var gas2135 = dive.gas(0.21, 0.35);
+        var gas50 = dive.gas(0.5, 0.0);
+        var gas100 = dive.gas(1.0, 0.0);
+
+        test.equals(57, Math.round(gasAir.modInMeters(1.4)), 'MOD of air is close to 60 meters.');
+        test.equals(47, Math.round(gas2135.modInMeters(1.2)), 'MOD of 21/35 is 60 meters.');
+        test.equals(22, Math.round(gas50.modInMeters(1.6)), 'MOD of 50% is close to 21 meters.');
+        test.equals(6, Math.round(gas100.modInMeters(1.6)), 'MOD of 100% is close to 6 meters.');
+        test.done();
+    },
+}
+
 exports['buhlmannequations'] = {
     setUp: function(done) {
         done();
@@ -582,23 +603,7 @@ exports['buhlmannplan'] = {
         test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
-    'deco procedure': function (test) {
-        test.expect(3);
-        var buhlmann = dive.deco.buhlmann();
-        var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
-        newPlan.addFlat(25, 0.21, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
-        newPlan.addFlat(35, 0.21, 0.0, 20);
-        newPlan.addDepthChange(35, 10, 0.21, 0.0, 2);
-        var gradientFactor = 1.5;
-        var decoProc = newPlan.calculateDecompression(0.21, 0.0, gradientFactor, gradientFactor);
-        test.equals(1, decoProc.length, 'should be one only decompression stop');
-        test.equals(4, decoProc[0].time, 'decompression stop should only be for 4 minutes');
-        test.equals(3, decoProc[0].depth, 'decompression stop should be at 3 meters depth');
-        test.done();
-    },
-
+    
     'ndl rule of 130 for 32 percent': function (test) {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
