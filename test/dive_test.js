@@ -465,6 +465,28 @@ exports['gasses'] = {
         test.equals(6, Math.round(gas100.modInMeters(1.6)), 'MOD of 100% is close to 6 meters.');
         test.done();
     },
+
+    'gas end': function (test) {
+        test.expect(2);
+        var gasAir = dive.gas(0.21, 0.0);
+        var gas2135 = dive.gas(0.21, 0.35);
+
+        test.equals(100, Math.round(gasAir.endInMeters(100)), 'END of air is close to 100 meters.');
+        test.equals(62, Math.round(gas2135.endInMeters(100)), 'END of 21/35 is 62 meters.');
+        test.done();
+    },
+
+    'gas reverse end': function (test) {
+        test.expect(3);
+        var gasAir = dive.gas(0.21, 0.0);
+        var gas2135 = dive.gas(0.21, 0.35);
+
+        test.equals(100, Math.round(gasAir.depthFromEndInMeters(100)), 'Depth on air to get 100 meters END, is 100 meters');
+        test.equals(101, Math.round(gas2135.depthFromEndInMeters(62)), 'Depth on 21/35 to get 62 meters END is 100 meters.');
+        test.equals(159, Math.round(gas2135.depthFromEndInMeters(100)), 'Depth on 21/35 to get 100 meters END is 100 meters.');
+        test.done();
+    },
+
 }
 
 exports['buhlmannequations'] = {
@@ -603,7 +625,7 @@ exports['buhlmannplan'] = {
         test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
-    
+
     'ndl rule of 130 for 32 percent': function (test) {
         test.expect(0);
         var buhlmann = dive.deco.buhlmann();
