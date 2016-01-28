@@ -608,7 +608,7 @@ exports['buhlmannequations'] = {
         test.done();
     }
 };
-/*
+
 exports['buhlmannplan'] = {
     setUp: function (done) {
         done();
@@ -666,6 +666,7 @@ exports['buhlmannplan'] = {
     }
 };
 
+/*
 exports['decompression'] = {
         setUp: function (done) {
             done();

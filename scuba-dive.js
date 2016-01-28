@@ -694,8 +694,6 @@
             var b = ((this.N2BValue() * this.pNitrogen) + (this.HeBValue() * this.pHelium)) / (this.pTotal);
             var bars = (this.pTotal - (a * gf)) / ((gf / b) + 1.0 - gf);
             //var bars = (this.pTotal - a) * b;
-
-            bars = bars - this.absPressure;
             this.ceiling = dive.barToDepthInMeters(bars, this.isFreshWater);
             //console.log("a:" + a + ", b:" + b + ", bars:" + bars + " ceiling:" + this.ceiling);
             return Math.round(this.ceiling);
