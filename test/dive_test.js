@@ -98,8 +98,8 @@ exports['barToDepthInMeters'] = {
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
-        var depth = Math.round(dive.barToDepthInMeters() * 100) / 100;
-        test.equal(depth, 9.9, 'should be 9.9 meters equal 1 bars below sea level on earth in salt water');
+        var depth = Math.round(dive.barToDepthInMeters(2) * 100) / 100;
+        test.equal(depth, 9.9, 'should be 9.9 meters equal 2 bars below sea level on earth in salt water');
         test.done();
     },
     '10.2 meters fresh': function(test) {
@@ -108,8 +108,8 @@ exports['barToDepthInMeters'] = {
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
-        var depth = Math.round(dive.barToDepthInMeters(1, true) * 100) / 100;
-        test.equal(depth, 10.2, 'should be 10.2 meters equal 1 bars below sea level on earth in fresh');
+        var depth = Math.round(dive.barToDepthInMeters(2, true) * 100) / 100;
+        test.equal(depth, 10.2, 'should be 10.2 meters equal 2 bars below sea level on earth in fresh');
         test.done();
     }
 };
@@ -342,13 +342,13 @@ exports['maxOperatingDepth'] = {
     },
     'salt water - max depth 1.4 bar with 21% O2': function(test) {
         test.expect(1);
-        var meters = dive.maxOperatingDepth(1.4, 0.21);
+        var meters = dive.gas(0.21, 0.0).modInMeters(1.4); //dive.maxOperatingDepth(1.4, 0.21);
         test.equals(Math.round(meters), 56, '1.4 bars at 21% oxygen should allow for about 56m MOD in salt water');
         test.done();
     },
     'fresh water - max depth 1.4 bar with 21% O2': function(test) {
         test.expect(1);
-        var meters = dive.maxOperatingDepth(1.4, 0.21, true);
+        var meters = dive.gas(0.21, 0.0).modInMeters(1.4, true); //dive.maxOperatingDepth(1.4, 0.21, true);
         test.equals(Math.round(meters), 58, '1.4 bars at 21% oxygen should allow for about 58m MOD in fresh water');
         test.done();
     }
@@ -360,14 +360,14 @@ exports['equivNarcoticDepth'] = {
     },
     'salt water - equivalent narcotic depth 12% O2, 38% N2, 50% He at 100m': function(test) {
         test.expect(1);
-        var meters = dive.equivNarcoticDepth(0.12,0.38,0.50,100);
-        test.equals(Math.round(meters), 57, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in salt water');
+        var meters = dive.gas(0.12,0.40).endInMeters(60);
+        test.equals(Math.round(meters), 32, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in salt water');
         test.done();
     },
     'fresh water - equivalent narcotic depth 12% O2, 38% N2, 50% He at 100m': function(test) {
         test.expect(1);
-        var meters = dive.equivNarcoticDepth(0.12,0.38,0.50,100,true);
-        test.equals(Math.round(meters), 57, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in fresh water');
+        var meters = dive.gas(0.12,0.38).endInMeters(100,true);
+        test.equals(Math.round(meters), 58, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in fresh water');
         test.done();
     },
 };
@@ -453,14 +453,15 @@ exports['gasses'] = {
     },
 
     'gas mod': function (test) {
-        test.expect(4);
+        test.expect(5);
         var gasAir = dive.gas(0.21, 0.0);
         var gas2135 = dive.gas(0.21, 0.35);
         var gas50 = dive.gas(0.5, 0.0);
         var gas100 = dive.gas(1.0, 0.0);
 
-        test.equals(57, Math.round(gasAir.modInMeters(1.4)), 'MOD of air is close to 60 meters.');
-        test.equals(47, Math.round(gas2135.modInMeters(1.2)), 'MOD of 21/35 is 60 meters.');
+        test.equals(56, Math.round(gasAir.modInMeters(1.4)), 'MOD of air is close to 60 meters.');
+        test.equals(56, Math.round(gas2135.modInMeters(1.4)), 'MOD of 21/35 is 60 meters.');
+        test.equals(47, Math.round(gas2135.modInMeters(1.2)), 'MOD of 21/35 is 50 meters at a 1.2 ppO2.');
         test.equals(22, Math.round(gas50.modInMeters(1.6)), 'MOD of 50% is close to 21 meters.');
         test.equals(6, Math.round(gas100.modInMeters(1.6)), 'MOD of 100% is close to 6 meters.');
         test.done();
@@ -476,14 +477,14 @@ exports['gasses'] = {
         test.done();
     },
 
-    'gas reverse end': function (test) {
+    'gas equivalent air depth': function (test) {
         test.expect(3);
         var gasAir = dive.gas(0.21, 0.0);
         var gas2135 = dive.gas(0.21, 0.35);
 
-        test.equals(100, Math.round(gasAir.depthFromEndInMeters(100)), 'Depth on air to get 100 meters END, is 100 meters');
-        test.equals(101, Math.round(gas2135.depthFromEndInMeters(62)), 'Depth on 21/35 to get 62 meters END is 100 meters.');
-        test.equals(159, Math.round(gas2135.depthFromEndInMeters(100)), 'Depth on 21/35 to get 100 meters END is 100 meters.');
+        test.equals(100, Math.round(gasAir.eadInMeters(100)), 'Equivalent air depth of 100 meters is 100 meters.');
+        test.equals(101, Math.round(gas2135.eadInMeters(62)), 'Equivalent Air Depth on 21/35 at 62 meters, is 100 meters.');
+        test.equals(159, Math.round(gas2135.eadInMeters(100)), 'Equivalent on 21/35 at 100 meters is 159 meters.');
         test.done();
     }
 
@@ -607,7 +608,7 @@ exports['buhlmannequations'] = {
         test.done();
     }
 };
-
+/*
 exports['buhlmannplan'] = {
     setUp: function (done) {
         done();
@@ -675,9 +676,11 @@ exports['decompression'] = {
             var plan = new buhlmann.plan(buhlmann.ZH16BTissues);
             plan.addBottomGas("2135", 0.21, 0.35);
             plan.addDecoGas("50%", 0.50, 0);
-
+            plan.addDepthChange(0, 150, "2135", 20);
+            plan.addFlat(150, "2135", 20);
+            plan.calculateDecompression();
             test.done();
         }
 };
-
+*/
 

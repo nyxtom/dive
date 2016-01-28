@@ -285,11 +285,13 @@
         }
 
         if (!bars) {
-            bars = 1;
+            bars = 1; //surface
         }
 
+        bars = bars - $self.constants.altitudePressure.current();
+
         var weightDensity = liquidDensity * $self.gravitySamples.current();
-        var pressure = $self.barToPascal(bars);
+        var pressure = $self.barToPascal(bars)
         return pressure / weightDensity;
     };
 
@@ -429,51 +431,6 @@
         return $self.pascalToBar(pascals);
     };
 
-    $self.maxOperatingDepth = function (ppO2, fO2, isFreshWater) {
-        /// <summary>Returns the maximum operating depth in meters from the desired partial pressure of oxygen limit and 
-        /// the volume fraction percent of oxygen in the gas mixture.</summary>
-        /// <param name="ppO2" type="Number">The desired partial pressure of oxygen in bars.</param>
-        /// <param name="fO2" type="Number">The volume fraction percent of oxygen in a given gas mixture.</param>
-        /// <param name="isFreshWater" type="Boolean">True to calculate for fresh water, default false to calculate salt water.</param>
-        /// <returns>The maximum recommended operating depth for the given desired PPO2 and FO2.</returns>
-
-        var meters = $self.barToDepthInMeters(1, isFreshWater);
-        return (meters * ((ppO2 / fO2) - $self.constants.altitudePressure.current()));
-    };
-
-    $self.equivNarcoticDepth = function (fO2, fN2, fHe, depth, isFreshWater) {
-        /// <summary>Calculates the equivalent narcotic depth to estimate the narcotic effect of a gas mixture.</summary>
-        /// <param name="fO2" type="Number">The volume fraction percent of oxygen in a given gas mixture.</param>
-        /// <param name="fN2" type="Number">The volume fraction percent of nitrogen in a given gas mixture.</param>
-        /// <param name="fHe" type="Number">The volume fraction percent of helium in a given gas mixture.</param>
-        /// <param name="depth" type="Number">The operating depth with the given gas mixture to calculate the END.</param>
-        /// <param name="isFreshWater" type="Boolean">True to calculate for fresh water, default false to calculate salt water.</param>
-        /// <returns>The END for the given gas mixture and operating depth with the assumption that all 3 gases are narcotic.</returns>
-
-        /* Based on http://www.techdiver.ws/trimix_narcosis.shtml */
-        // http://en.wikipedia.org/wiki/Equivalent_narcotic_depth
-        // Original wikipedia article only uses Method 1 based on the idea 
-        // that only nitrogen is narcotic whereas this equation simply 
-        // calculates the equivalent depth based on partial pressures and 
-        // narcotic factors in relation to the gas mixture of air
-        
-        var ppO2 = $self.partialPressureAtDepth(depth, fO2, isFreshWater);
-        var ppN2 = $self.partialPressureAtDepth(depth, fN2, isFreshWater);
-        var ppHe = $self.partialPressureAtDepth(depth, fHe, isFreshWater);
-
-        // Helium has a narc factor of 0.23 while N2 and O2 have a narc factor of 1
-        var narcIndex = (ppO2) + (ppN2) + (ppHe * 0.23);
-
-        // Argon is present in the air at 0.0934% and has a narc factor of 2.33
-        var ppO2Air = $self.partialPressure(1, 0.2095);
-        var ppN2Air = $self.partialPressure(1, 0.7808);
-        var ppArAir = $self.partialPressure(1, 0.00934);
-        var narcIndexAir = (ppO2Air * 1) + (ppN2Air  * 1) + (ppArAir * 2.33);
-
-        var relation = narcIndex / narcIndexAir;
-        return ((relation - $self.constants.altitudePressure.current()) * $self.barToDepthInMeters(1, isFreshWater));
-    };
-
     $self.depthChangeInBarsPerMinute = function (beginDepth, endDepth, time, isFreshWater) {
         /// <summary>Calculates the depth change speed in bars per minute.</summary>
         /// <param name="beginDepth" type="Number">The begin depth in meters.</param>
@@ -544,18 +501,33 @@
         var gas = {};
         gas.fO2 = fO2;
         gas.fHe = fHe;
-        gas.fN2 = (1 - (this.fO2 + this.fHe));
+        gas.fN2 = (1 - (gas.fO2 + gas.fHe));
 
-        gas.modInMeters = function(ppO2) {
-            return 10 * ((ppO2 / fO2) - 1);
+        gas.modInMeters = function(ppO2, isFreshWater) {
+            var meters = $self.barToDepthInMeters(1, isFreshWater);
+            return (meters * ((ppO2 / this.fO2) - $self.constants.altitudePressure.current()));
         };
 
-        gas.endInMeters = function(depth) {
-            return (depth+10) * (1 - this.fHe) - 10;
+        gas.endInMeters = function(depth, isFreshWater) {
+
+            // Helium has a narc factor of 0 while N2 and O2 have a narc factor of 1
+            var narcIndex = (this.fO2) + (this.fN2);
+
+            var bars = $self.depthInMetersToBars(depth, isFreshWater);
+            var equivalentBars = bars * narcIndex;
+            //console.log("Depth: " + depth + " Bars:" + bars + "Relation: " + narcIndex + " Equivalent Bars:" +equivalentBars);
+            return  $self.barToDepthInMeters(equivalentBars, isFreshWater);
         };
 
-        gas.depthFromEndInMeters = function(equivalentNarcoticDepth) {
-            return ((equivalentNarcoticDepth + 10)/(1-this.fHe)) - 10;
+        gas.eadInMeters = function(depth, isFreshWater) {
+
+            // Helium has a narc factor of 0 while N2 and O2 have a narc factor of 1
+            var narcIndex = (this.fO2) + (this.fN2);
+
+            var bars = $self.depthInMetersToBars(depth, isFreshWater);
+            var equivalentBars = bars/narcIndex;
+            //console.log("Depth: " + depth + " Bars:" + bars + "Relation: " + narcIndex + " Equivalent Bars:" +equivalentBars);
+            return  $self.barToDepthInMeters(equivalentBars, isFreshWater);
         };
 
         return gas;
@@ -737,7 +709,7 @@
             }
             this.bottomGasses = {};
             this.decoGasses = {};
-            this.stages = [];
+            this.segments = [];
         };
 
         plan.prototype.addBottomGas = function(gasName, fO2, fHe) {
@@ -761,7 +733,7 @@
             var fHe = bottomGas.fHe;
 
             //store this as a stage
-            this.stages[this.stages.length] = dive.stage(startDepth, endDepth, gasName, time);
+            this.segments[this.segments.length] = dive.stage(startDepth, endDepth, gasName, time);
 
             var loadChange = 0.0;
             for (var i = 0; i < this.tissues.length; i++) {
@@ -795,17 +767,37 @@
             }
         }
 
-        plan.prototype.calculateDecompression = function (maintainTissues, gfLow, gfHigh) {
+        plan.prototype.calculateDecompression = function (maintainTissues, gfLow, gfHigh, maxppO2, maxEND, fromDepth) {
+            maintainTissues = maintainTissues || false;
             gfLow = gfLow || 1.0;
             gfHigh = gfHigh || 1.0;
+            maxppO2 = maxppO2 || 1.6;
+            maxEND = maxEND || 30;
+            var currentGas;
+            if (typeof fromDepth == 'undefined') {
+                if (this.segments.length == 0) {
+                    throw "No depth to decompress from has been specified, and neither have any dive stages been registered. Unable to decompress.";
+                } else {
+                    fromDepth = this.segments[this.segments.length-1].endDepth;
+                    currentGas = this.segments[this.segments.length-1].gasName;
+                }
+            }
+            if (typeof currentGas == 'undefined') {
+                currentGas = this.bestDecoGas(fromDepth, maxppO2, maxEND);
+                if (typeof currentGas == 'undefined') {
+                    throw "Unable to find starting gas. No segments provided with bottom mix, and no deco gas operational at this depth.";
+                }
+            }
+
             var decoProc = [];
+
             var gfDiff = gfHigh-gfLow; //find variance in gradient factor
             var distanceToSurface = fromDepth;
             var gfChangePerMeter = gfDiff/distanceToSurface
-
             if (!maintainTissues) {
                 var origTissues = JSON.stringify(this.tissues);
             }
+            var ceiling = this.getCeiling(gfLow);
             //console.log("Start Ceiling:" + ceiling + " with GF:" + gfLow)
             while (ceiling > 0) {
                 var currentDepth = ceiling;
@@ -826,6 +818,17 @@
             }
             return decoProc;
         };
+
+        plan.prototype.bestDecoGas = function(depth, maxppO2, maxEND) {
+            //best gas is defined as: a ppO2 at depth <= maxppO2,
+            // the highest ppO2 among all of these.
+            // END <= 30 (equivalent narcotic depth < 30 meters)
+            for (var i=0; i < this.decoGasses.length; i++) {
+                var candidateGas = this.decoGasses[i];
+                var mod = candidateGas.modInMeters(maxppO2);
+                var end = candidateGas.equivNarcoticDepth
+            }
+        }
 
         plan.prototype.ndl = function (depth, gasName, gf) {
             gf = gf || 1.0
