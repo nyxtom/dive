@@ -485,9 +485,9 @@ exports['gasses'] = {
         test.equals(101, Math.round(gas2135.depthFromEndInMeters(62)), 'Depth on 21/35 to get 62 meters END is 100 meters.');
         test.equals(159, Math.round(gas2135.depthFromEndInMeters(100)), 'Depth on 21/35 to get 100 meters END is 100 meters.');
         test.done();
-    },
+    }
 
-}
+};
 
 exports['buhlmannequations'] = {
     setUp: function(done) {
@@ -608,9 +608,8 @@ exports['buhlmannequations'] = {
     }
 };
 
-
 exports['buhlmannplan'] = {
-    setUp: function(done) {
+    setUp: function (done) {
         done();
     },
 
@@ -618,10 +617,11 @@ exports['buhlmannplan'] = {
         test.expect(1);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
-        newPlan.addFlat(25, 0.21, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
-        newPlan.addFlat(35, 0.21, 0.0, 15);
+        newPlan.addBottomGas("air", 0.21, 0.0);
+        newPlan.addDepthChange(0, 25, "air", 2);
+        newPlan.addFlat(25, "air", 20);
+        newPlan.addDepthChange(25, 35,"air", 2);
+        newPlan.addFlat(35, "air", 15);
         test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
@@ -631,9 +631,10 @@ exports['buhlmannplan'] = {
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
         var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
+        newPlan.addBottomGas("32%", 0.32, 0.0);
         //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        for (var i=100; i > 50; i-=10) {
-            var ndlTime = newPlan.ndl(dive.feetToMeters(i), 0.32, 0.0, gradientFactor);
+        for (var i = 100; i > 50; i -= 10) {
+            var ndlTime = newPlan.ndl(dive.feetToMeters(i), "32%", gradientFactor);
             var closeTo130 = ndlTime + i;
             console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
         }
@@ -645,20 +646,38 @@ exports['buhlmannplan'] = {
         test.expect(12);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addBottomGas("air", 0.21, 0.0);
         var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
         //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        test.equals(8, newPlan.ndl(dive.feetToMeters(140), 0.21, 0.0, gradientFactor), "NDL for 140 feet should be close to 7 minutes");
-        test.equals(9, newPlan.ndl(dive.feetToMeters(130), 0.21, 0.0, gradientFactor), "NDL for 130 feet should be close to  9 minutes");
-        test.equals(10, newPlan.ndl(dive.feetToMeters(120), 0.21, 0.0, gradientFactor), "NDL for 120 feet should be close to 12 minutes");
-        test.equals(12, newPlan.ndl(dive.feetToMeters(110), 0.21, 0.0, gradientFactor), "NDL for 110 feet should be close to 15 minutes");
-        test.equals(15, newPlan.ndl(dive.feetToMeters(100), 0.21, 0.0, gradientFactor), "NDL for 100 feet should be close to 19 minutes");
-        test.equals(18, newPlan.ndl(dive.feetToMeters(90), 0.21, 0.0, gradientFactor), "NDL for 90 feet should be close to 24 minutes");
-        test.equals(24, newPlan.ndl(dive.feetToMeters(80), 0.21, 0.0, gradientFactor), "NDL for 80 feet should be close to 29 minutes");
-        test.equals(33, newPlan.ndl(dive.feetToMeters(70), 0.21, 0.0, gradientFactor), "NDL for 70 feet should be close to 38 minutes");
-        test.equals(45, newPlan.ndl(dive.feetToMeters(60), 0.21, 0.0, gradientFactor), "NDL for 60 feet should be close to 54 minutes");
-        test.equals(67, newPlan.ndl(dive.feetToMeters(50), 0.21, 0.0, gradientFactor), "NDL for 50 feet should be close to 75 minutes");
-        test.equals(120, newPlan.ndl(dive.feetToMeters(40), 0.21, 0.0, gradientFactor), "NDL for 40 feet should be close to 129 minutes");
-        test.equals(179, newPlan.ndl(dive.feetToMeters(35), 0.21, 0.0, gradientFactor), "NDL for 35 feet should be close to 188 minutes");
+        test.equals(8, newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
+        test.equals(9, newPlan.ndl(dive.feetToMeters(130), "air", gradientFactor), "NDL for 130 feet should be close to  9 minutes");
+        test.equals(10, newPlan.ndl(dive.feetToMeters(120), "air", gradientFactor), "NDL for 120 feet should be close to 12 minutes");
+        test.equals(12, newPlan.ndl(dive.feetToMeters(110), "air", gradientFactor), "NDL for 110 feet should be close to 15 minutes");
+        test.equals(15, newPlan.ndl(dive.feetToMeters(100), "air", gradientFactor), "NDL for 100 feet should be close to 19 minutes");
+        test.equals(18, newPlan.ndl(dive.feetToMeters(90), "air", gradientFactor), "NDL for 90 feet should be close to 24 minutes");
+        test.equals(24, newPlan.ndl(dive.feetToMeters(80), "air", gradientFactor), "NDL for 80 feet should be close to 29 minutes");
+        test.equals(33, newPlan.ndl(dive.feetToMeters(70), "air", gradientFactor), "NDL for 70 feet should be close to 38 minutes");
+        test.equals(45, newPlan.ndl(dive.feetToMeters(60), "air", gradientFactor), "NDL for 60 feet should be close to 54 minutes");
+        test.equals(67, newPlan.ndl(dive.feetToMeters(50), "air", gradientFactor), "NDL for 50 feet should be close to 75 minutes");
+        test.equals(120, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
+        test.equals(179, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
         test.done();
     }
 };
+
+exports['decompression'] = {
+        setUp: function (done) {
+            done();
+        },
+        'decompression': function(test) {
+            test.expect(0);
+            var buhlmann = dive.deco.buhlmann();
+            var plan = new buhlmann.plan(buhlmann.ZH16BTissues);
+            plan.addBottomGas("2135", 0.21, 0.35);
+            plan.addDecoGas("50%", 0.50, 0);
+
+            test.done();
+        }
+};
+
+
