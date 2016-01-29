@@ -98,8 +98,8 @@ exports['barToDepthInMeters'] = {
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
-        var depth = Math.round(dive.barToDepthInMeters() * 100) / 100;
-        test.equal(depth, 9.9, 'should be 9.9 meters equal 1 bars below sea level on earth in salt water');
+        var depth = Math.round(dive.barToDepthInMeters(2) * 100) / 100;
+        test.equal(depth, 9.9, 'should be 9.9 meters equal 2 bars below sea level on earth in salt water');
         test.done();
     },
     '10.2 meters fresh': function(test) {
@@ -108,8 +108,8 @@ exports['barToDepthInMeters'] = {
         dive.surfacePressureSamples.current(dive.surfacePressureSamples.earth);
         test.equal(dive.gravitySamples.current(), 9.80665, 'should be 9.8 m/s2 on earth as gravity default');
         test.equal(dive.surfacePressureSamples.current(), 1, 'should be 1 bar on earth as surface pressure default');
-        var depth = Math.round(dive.barToDepthInMeters(1, true) * 100) / 100;
-        test.equal(depth, 10.2, 'should be 10.2 meters equal 1 bars below sea level on earth in fresh');
+        var depth = Math.round(dive.barToDepthInMeters(2, true) * 100) / 100;
+        test.equal(depth, 10.2, 'should be 10.2 meters equal 2 bars below sea level on earth in fresh');
         test.done();
     }
 };
@@ -342,14 +342,14 @@ exports['maxOperatingDepth'] = {
     },
     'salt water - max depth 1.4 bar with 21% O2': function(test) {
         test.expect(1);
-        var meters = dive.maxOperatingDepth(1.4, 0.21);
+        var meters = dive.gas(0.21, 0.0).modInMeters(1.4); //dive.maxOperatingDepth(1.4, 0.21);
         test.equals(Math.round(meters), 56, '1.4 bars at 21% oxygen should allow for about 56m MOD in salt water');
         test.done();
     },
     'fresh water - max depth 1.4 bar with 21% O2': function(test) {
         test.expect(1);
-        var meters = dive.maxOperatingDepth(1.4, 0.21, true);
-        test.equals(Math.round(meters), 58, '1.4 bars at 21% oxygen should allow for about 58m MOD in fresh water');
+        var meters = dive.gas(0.21, 0.0).modInMeters(1.4, true); //dive.maxOperatingDepth(1.4, 0.21, true);
+        test.equals(Math.round(meters), 58, '1.4 bars at 21% oxygen should allow for about 56m MOD in fresh water');
         test.done();
     }
 };
@@ -360,14 +360,14 @@ exports['equivNarcoticDepth'] = {
     },
     'salt water - equivalent narcotic depth 12% O2, 38% N2, 50% He at 100m': function(test) {
         test.expect(1);
-        var meters = dive.equivNarcoticDepth(0.12,0.38,0.50,100);
-        test.equals(Math.round(meters), 57, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in salt water');
+        var meters = dive.gas(0.12,0.40).endInMeters(60);
+        test.equals(Math.round(meters), 32, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in salt water');
         test.done();
     },
     'fresh water - equivalent narcotic depth 12% O2, 38% N2, 50% He at 100m': function(test) {
         test.expect(1);
-        var meters = dive.equivNarcoticDepth(0.12,0.38,0.50,100,true);
-        test.equals(Math.round(meters), 57, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in fresh water');
+        var meters = dive.gas(0.12,0.38).endInMeters(100,true);
+        test.equals(Math.round(meters), 58, '12% O2/38% N2/50% He should have the same narcotic depth on air at x meters in fresh water');
         test.done();
     },
 };
@@ -444,6 +444,50 @@ exports['gasPressureBreathingInBars'] = {
         test.equals(Math.round(bars * 100) / 100, 1.56, 'breathing 79% N2 at 10 meters in fresh water should be about 1.56 bars (remember to add 1 bar for the surface)');
         test.done();
     }
+};
+
+
+exports['gasses'] = {
+    setUp: function (done) {
+        done();
+    },
+
+    'gas mod': function (test) {
+        test.expect(5);
+        var gasAir = dive.gas(0.21, 0.0);
+        var gas2135 = dive.gas(0.21, 0.35);
+        var gas50 = dive.gas(0.5, 0.0);
+        var gas100 = dive.gas(1.0, 0.0);
+
+        test.equals(56, Math.round(gasAir.modInMeters(1.4)), 'MOD of air is close to 60 meters.');
+        test.equals(56, Math.round(gas2135.modInMeters(1.4)), 'MOD of 21/35 is 60 meters.');
+        test.equals(47, Math.round(gas2135.modInMeters(1.2)), 'MOD of 21/35 is 50 meters at a 1.2 ppO2.');
+        test.equals(22, Math.round(gas50.modInMeters(1.6)), 'MOD of 50% is close to 21 meters.');
+        test.equals(6, Math.round(gas100.modInMeters(1.6)), 'MOD of 100% is close to 6 meters.');
+        test.done();
+    },
+
+    'gas end': function (test) {
+        test.expect(2);
+        var gasAir = dive.gas(0.21, 0.0);
+        var gas2135 = dive.gas(0.21, 0.35);
+
+        test.equals(100, Math.round(gasAir.endInMeters(100)), 'END of air is close to 100 meters.');
+        test.equals(62, Math.round(gas2135.endInMeters(100)), 'END of 21/35 is 62 meters.');
+        test.done();
+    },
+
+    'gas equivalent air depth': function (test) {
+        test.expect(3);
+        var gasAir = dive.gas(0.21, 0.0);
+        var gas2135 = dive.gas(0.21, 0.35);
+
+        test.equals(100, Math.round(gasAir.eadInMeters(100)), 'Equivalent air depth of 100 meters is 100 meters.');
+        test.equals(101, Math.round(gas2135.eadInMeters(62)), 'Equivalent Air Depth on 21/35 at 62 meters, is 100 meters.');
+        test.equals(159, Math.round(gas2135.eadInMeters(100)), 'Equivalent on 21/35 at 100 meters is 159 meters.');
+        test.done();
+    }
+
 };
 
 exports['buhlmannequations'] = {
@@ -565,9 +609,8 @@ exports['buhlmannequations'] = {
     }
 };
 
-
 exports['buhlmannplan'] = {
-    setUp: function(done) {
+    setUp: function (done) {
         done();
     },
 
@@ -575,40 +618,27 @@ exports['buhlmannplan'] = {
         test.expect(1);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
-        newPlan.addFlat(25, 0.21, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
-        newPlan.addFlat(35, 0.21, 0.0, 15);
+        newPlan.addBottomGas("air", 0.21, 0.0);
+        newPlan.addDepthChange(0, 25, "air", 2);
+        newPlan.addFlat(25, "air", 20);
+        newPlan.addDepthChange(25, 35,"air", 2);
+        newPlan.addFlat(35, "air", 15);
         test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
-        test.done();
-    },
-    'deco procedure': function (test) {
-        test.expect(3);
-        var buhlmann = dive.deco.buhlmann();
-        var newPlan = new buhlmann.plan(buhlmann.ZH16ATissues);
-        newPlan.addDepthChange(0, 25, 0.21, 0.0, 2);
-        newPlan.addFlat(25, 0.21, 0.0, 20);
-        newPlan.addDepthChange(25, 35, 0.21, 0.0, 2);
-        newPlan.addFlat(35, 0.21, 0.0, 20);
-        newPlan.addDepthChange(35, 10, 0.21, 0.0, 2);
-        var gradientFactor = 1.5;
-        var decoProc = newPlan.calculateDecompression(0.21, 0.0, gradientFactor, gradientFactor);
-        test.equals(1, decoProc.length, 'should be one only decompression stop');
-        test.equals(4, decoProc[0].time, 'decompression stop should only be for 4 minutes');
-        test.equals(3, decoProc[0].depth, 'decompression stop should be at 3 meters depth');
         test.done();
     },
 
     'ndl rule of 130 for 32 percent': function (test) {
-        test.expect(0);
+        test.expect(5);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
         var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
+        newPlan.addBottomGas("32%", 0.32, 0.0);
         //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        for (var i=100; i > 50; i-=10) {
-            var ndlTime = newPlan.ndl(dive.feetToMeters(i), 0.32, 0.0, gradientFactor);
+        for (var i = 100; i > 50; i -= 10) {
+            var ndlTime = newPlan.ndl(dive.feetToMeters(i), "32%", gradientFactor);
             var closeTo130 = ndlTime + i;
-            console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
+            test.ok(120 <= closeTo130 && closeTo130 <= 140, 'The depth + time should be within +/- 10 of 130');
+            //console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
         }
         test.done();
     },
@@ -618,20 +648,83 @@ exports['buhlmannplan'] = {
         test.expect(12);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addBottomGas("air", 0.21, 0.0);
         var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
         //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        test.equals(8, newPlan.ndl(dive.feetToMeters(140), 0.21, 0.0, gradientFactor), "NDL for 140 feet should be close to 7 minutes");
-        test.equals(9, newPlan.ndl(dive.feetToMeters(130), 0.21, 0.0, gradientFactor), "NDL for 130 feet should be close to  9 minutes");
-        test.equals(10, newPlan.ndl(dive.feetToMeters(120), 0.21, 0.0, gradientFactor), "NDL for 120 feet should be close to 12 minutes");
-        test.equals(12, newPlan.ndl(dive.feetToMeters(110), 0.21, 0.0, gradientFactor), "NDL for 110 feet should be close to 15 minutes");
-        test.equals(15, newPlan.ndl(dive.feetToMeters(100), 0.21, 0.0, gradientFactor), "NDL for 100 feet should be close to 19 minutes");
-        test.equals(18, newPlan.ndl(dive.feetToMeters(90), 0.21, 0.0, gradientFactor), "NDL for 90 feet should be close to 24 minutes");
-        test.equals(24, newPlan.ndl(dive.feetToMeters(80), 0.21, 0.0, gradientFactor), "NDL for 80 feet should be close to 29 minutes");
-        test.equals(33, newPlan.ndl(dive.feetToMeters(70), 0.21, 0.0, gradientFactor), "NDL for 70 feet should be close to 38 minutes");
-        test.equals(45, newPlan.ndl(dive.feetToMeters(60), 0.21, 0.0, gradientFactor), "NDL for 60 feet should be close to 54 minutes");
-        test.equals(67, newPlan.ndl(dive.feetToMeters(50), 0.21, 0.0, gradientFactor), "NDL for 50 feet should be close to 75 minutes");
-        test.equals(120, newPlan.ndl(dive.feetToMeters(40), 0.21, 0.0, gradientFactor), "NDL for 40 feet should be close to 129 minutes");
-        test.equals(179, newPlan.ndl(dive.feetToMeters(35), 0.21, 0.0, gradientFactor), "NDL for 35 feet should be close to 188 minutes");
+        test.equals(8, newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
+        test.equals(9, newPlan.ndl(dive.feetToMeters(130), "air", gradientFactor), "NDL for 130 feet should be close to  9 minutes");
+        test.equals(10, newPlan.ndl(dive.feetToMeters(120), "air", gradientFactor), "NDL for 120 feet should be close to 12 minutes");
+        test.equals(12, newPlan.ndl(dive.feetToMeters(110), "air", gradientFactor), "NDL for 110 feet should be close to 15 minutes");
+        test.equals(15, newPlan.ndl(dive.feetToMeters(100), "air", gradientFactor), "NDL for 100 feet should be close to 19 minutes");
+        test.equals(18, newPlan.ndl(dive.feetToMeters(90), "air", gradientFactor), "NDL for 90 feet should be close to 24 minutes");
+        test.equals(24, newPlan.ndl(dive.feetToMeters(80), "air", gradientFactor), "NDL for 80 feet should be close to 29 minutes");
+        test.equals(33, newPlan.ndl(dive.feetToMeters(70), "air", gradientFactor), "NDL for 70 feet should be close to 38 minutes");
+        test.equals(45, newPlan.ndl(dive.feetToMeters(60), "air", gradientFactor), "NDL for 60 feet should be close to 54 minutes");
+        test.equals(67, newPlan.ndl(dive.feetToMeters(50), "air", gradientFactor), "NDL for 50 feet should be close to 75 minutes");
+        test.equals(120, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
+        test.equals(179, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
+        test.done();
+    },
+
+    'best deco gas':
+        function(test) {
+        test.expect(5);
+        var buhlmann = dive.deco.buhlmann();
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addDecoGas("21/35", 0.21, 0.35);
+        newPlan.addDecoGas("50%", 0.50, 0.0);
+        newPlan.addDecoGas("O2", 1.0, 0.0);
+
+        var decoGasName = newPlan.bestDecoGasName(50, 1.6, 30);
+        test.equals("21/35", decoGasName, 'Best deco gas at 50 meters 21/35.');
+
+        decoGasName = newPlan.bestDecoGasName(21, 1.6, 30);
+        test.equals("50%", decoGasName, 'Best deco gas at 21 meters is 50%');
+
+        decoGasName = newPlan.bestDecoGasName(6, 1.6, 30);
+        test.equals("O2", decoGasName, 'Best deco gas at 6 meters is 100%');
+
+        newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addDecoGas("Air", 0.21, 0.0);
+        decoGasName = newPlan.bestDecoGasName(40, 1.6, 30);
+        test.equals('undefined', typeof decoGasName, 'Deco gas should be undefined, because even though ppO2 is fine, the END exceeds our specified max.');
+
+        decoGasName = newPlan.bestDecoGasName(40, 1.6, 40);
+        test.equals("Air", decoGasName, 'Deco gas should be air when a higher END is specified.');
+
         test.done();
     }
 };
+
+
+exports['decompression'] = {
+        setUp: function (done) {
+            done();
+        },
+        'decompression gas switch once': function(test) {
+            test.expect(0);
+            var buhlmann = dive.deco.buhlmann();
+            var plan = new buhlmann.plan(buhlmann.ZH16BTissues);
+            plan.addBottomGas("2135", 0.21, 0.35);
+            plan.addDecoGas("50%", 0.50, 0);
+            plan.addDepthChange(0, dive.feetToMeters(150), "2135", 20);
+            plan.addFlat(dive.feetToMeters(150), "2135", 30);
+            console.log(plan.calculateDecompression(false, 1.2, 1.8, 1.6, 30));
+            test.done();
+        },
+
+        'decompression gas switch twice': function(test) {
+            test.expect(0);
+            var buhlmann = dive.deco.buhlmann();
+            var plan = new buhlmann.plan(buhlmann.ZH16BTissues);
+            plan.addBottomGas("2135", 0.21, 0.35);
+            plan.addDecoGas("50%", 0.50, 0);
+            plan.addDecoGas("Oxygen 100%", 1.0, 0.0);
+            plan.addDepthChange(0, dive.feetToMeters(150), "2135", 20);
+            plan.addFlat(dive.feetToMeters(150), "2135", 30);
+            console.log(plan.calculateDecompression(false, 1.2, 1.8, 1.6, 30));
+            test.done();
+        }
+};
+
+
