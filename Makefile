@@ -29,7 +29,7 @@ scuba-dive.js: Makefile
 
 %.browserified.js:: Makefile
 	rm -f $@
-	$(BROWSERIFY_COMPILER) $(filter %.js,$^) -o $@
+	$(BROWSERIFY_COMPILER) browser.js -o $@
 
 clean:
 	rm -rf scuba-dive.js scuba-dive.min.js scuba-dive.browserified.js
