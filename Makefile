@@ -9,15 +9,9 @@ JS_FILES = \
 JS_COMPILER = \
         uglifyjs
 
-
-BROWSERIFY_COMPILER = \
-        browserify
-
-all: scuba-dive.js scuba-dive.min.js scuba-dive.browserified.js
-
+all: scuba-dive.js scuba-dive.min.js
 scuba-dive.js: $(JS_FILES)
 scuba-dive.min.js: $(JS_FILES)
-scuba-dive.browserified.js: scuba-dive.js
 
 scuba-dive.js: Makefile
 	  rm -f $@
@@ -27,12 +21,8 @@ scuba-dive.js: Makefile
 	rm -f $@
 	cat $(filter %.js,$^) | $(JS_COMPILER) >> $@
 
-%.browserified.js:: Makefile
-	rm -f $@
-	$(BROWSERIFY_COMPILER) browser.js -o $@
-
 clean:
-	rm -rf scuba-dive.js scuba-dive.min.js scuba-dive.browserified.js
+	rm -rf scuba-dive.js scuba-dive.min.js
 
 test: all
 	grunt test
