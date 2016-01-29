@@ -96,12 +96,19 @@ dive.instantaneousEquation(0.79, pGas, 40, 4.0); // 1.5940936555866738 bar
 // buhlmann deco algorithm (*this needs review*)
 var buhlmannDeco = dive.deco.buhlmann();
 var newPlan = new buhlmannDeco.plan(buhlmannDeco.ZH16ATissues); // 1 abs pressure in fresh water
-newPlan.addDepthChange(0, 25, 0.79, 0.0, 2);
-newPlan.addFlat(25, 0.79, 0.0, 20);
-newPlan.addDepthChange(25, 35, 0.79, 0.0, 2);
-newPlan.addFlat(35, 0.79, 0.0, 20);
-newPlan.addDepthChange(35, 10, 0.79, 0.0, 2); 
-newPlan.calculateDecompression(0.79, 0.0); // [{'depth':3,'time':2}] 1 stop at 3 meters for 2 minutes
+newPlan.addBottomGas("2135", 0.21, 0.35);
+newPlan.addDecoGas("50%", 0.5, 0.0);
+newPlan.addDepthChange(0, 50, "2135", 5);
+newPlan.addFlat(50, "2135", 25);
+var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30); //gradientFactorLow = 0.2, gradientFactorHigh=0.8, deco ppO2 = 1.6, and max END allowed: 30 meters.
+
+//No-Deco limit for a gas at a depth
+var buhlmann = dive.deco.buhlmann();
+var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+newPlan.addBottomGas("air", 0.21, 0.0);
+var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
+newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
+
 ```
 
 ## TODO
