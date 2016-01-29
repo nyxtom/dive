@@ -349,7 +349,7 @@ exports['maxOperatingDepth'] = {
     'fresh water - max depth 1.4 bar with 21% O2': function(test) {
         test.expect(1);
         var meters = dive.gas(0.21, 0.0).modInMeters(1.4, true); //dive.maxOperatingDepth(1.4, 0.21, true);
-        test.equals(Math.round(meters), 58, '1.4 bars at 21% oxygen should allow for about 58m MOD in fresh water');
+        test.equals(Math.round(meters), 58, '1.4 bars at 21% oxygen should allow for about 56m MOD in fresh water');
         test.done();
     }
 };
@@ -628,7 +628,7 @@ exports['buhlmannplan'] = {
     },
 
     'ndl rule of 130 for 32 percent': function (test) {
-        test.expect(0);
+        test.expect(5);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
         var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
@@ -637,7 +637,8 @@ exports['buhlmannplan'] = {
         for (var i = 100; i > 50; i -= 10) {
             var ndlTime = newPlan.ndl(dive.feetToMeters(i), "32%", gradientFactor);
             var closeTo130 = ndlTime + i;
-            console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
+            test.ok(120 <= closeTo130 && closeTo130 <= 140, 'The depth + time should be within +/- 10 of 130');
+            //console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
         }
         test.done();
     },
@@ -663,10 +664,39 @@ exports['buhlmannplan'] = {
         test.equals(120, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
         test.equals(179, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
         test.done();
+    },
+
+    'best deco gas':
+        function(test) {
+        test.expect(5);
+        var buhlmann = dive.deco.buhlmann();
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addDecoGas("21/35", 0.21, 0.35);
+        newPlan.addDecoGas("50%", 0.50, 0.0);
+        newPlan.addDecoGas("O2", 1.0, 0.0);
+
+        var decoGasName = newPlan.bestDecoGasName(50, 1.6, 30);
+        test.equals("21/35", decoGasName, 'Best deco gas at 50 meters 21/35.');
+
+        decoGasName = newPlan.bestDecoGasName(21, 1.6, 30);
+        test.equals("50%", decoGasName, 'Best deco gas at 21 meters is 50%');
+
+        decoGasName = newPlan.bestDecoGasName(6, 1.6, 30);
+        test.equals("O2", decoGasName, 'Best deco gas at 6 meters is 100%');
+
+        newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addDecoGas("Air", 0.21, 0.0);
+        decoGasName = newPlan.bestDecoGasName(40, 1.6, 30);
+        test.equals('undefined', typeof decoGasName, 'Deco gas should be undefined, because even though ppO2 is fine, the END exceeds our specified max.');
+
+        decoGasName = newPlan.bestDecoGasName(40, 1.6, 40);
+        test.equals("Air", decoGasName, 'Deco gas should be air when a higher END is specified.');
+
+        test.done();
     }
 };
 
-/*
+
 exports['decompression'] = {
         setUp: function (done) {
             done();
@@ -683,5 +713,5 @@ exports['decompression'] = {
             test.done();
         }
 };
-*/
+
 

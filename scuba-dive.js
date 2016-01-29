@@ -504,8 +504,7 @@
         gas.fN2 = (1 - (gas.fO2 + gas.fHe));
 
         gas.modInMeters = function(ppO2, isFreshWater) {
-            var meters = $self.barToDepthInMeters(1, isFreshWater);
-            return (meters * ((ppO2 / this.fO2) - $self.constants.altitudePressure.current()));
+            return $self.barToDepthInMeters(ppO2 / this.fO2, isFreshWater);
         };
 
         gas.endInMeters = function(depth, isFreshWater) {
@@ -701,6 +700,7 @@
 
         function plan(buhlmannTable, absPressure, isFreshWater) {
             this.table = buhlmannTable;
+            this.isFreshWater = isFreshWater;
             this.tissues = [];
             for (var i = 0; i < this.table.length; i++) {
                 this.tissues[i] = new buhlmannTissue(this.table[i], absPressure, isFreshWater);
@@ -771,23 +771,15 @@
             gfHigh = gfHigh || 1.0;
             maxppO2 = maxppO2 || 1.6;
             maxEND = maxEND || 30;
-            var currentGas;
+            var currentGasName;
             if (typeof fromDepth == 'undefined') {
                 if (this.segments.length == 0) {
                     throw "No depth to decompress from has been specified, and neither have any dive stages been registered. Unable to decompress.";
                 } else {
                     fromDepth = this.segments[this.segments.length-1].endDepth;
-                    currentGas = this.segments[this.segments.length-1].gasName;
+                    currentGasName = this.segments[this.segments.length-1].gasName;
                 }
             }
-            if (typeof currentGas == 'undefined') {
-                currentGas = this.bestDecoGas(fromDepth, maxppO2, maxEND);
-                if (typeof currentGas == 'undefined') {
-                    throw "Unable to find starting gas. No segments provided with bottom mix, and no deco gas operational at this depth.";
-                }
-            }
-
-            var decoProc = [];
 
             var gfDiff = gfHigh-gfLow; //find variance in gradient factor
             var distanceToSurface = fromDepth;
@@ -795,37 +787,97 @@
             if (!maintainTissues) {
                 var origTissues = JSON.stringify(this.tissues);
             }
+
             var ceiling = this.getCeiling(gfLow);
+
+            currentGasName = this.addDecoDepthChange(fromDepth, ceiling, maxppO2, maxEND, currentGasName);
+
             //console.log("Start Ceiling:" + ceiling + " with GF:" + gfLow)
             while (ceiling > 0) {
                 var currentDepth = ceiling;
                 var nextDecoDepth = (ceiling - 3);
-                var time = 1;
+                var time = 0;
                 var gf = gfLow + (gfChangePerMeter * (distanceToSurface - ceiling));
                 //console.log("GradientFactor:"+gf + " Next decoDepth:" + nextDecoDepth);
                 while (ceiling > nextDecoDepth && time <= 10000) {
-                    this.addFlat(currentDepth, fO2, fHe, time);
+                    this.addFlat(currentDepth, currentGas, 1);
                     time++;
                     ceiling = this.getCeiling(gf);
                 }
-                //console.log("Added deco stop at Depth " + currentDepth + " for time:" + time);
-                decoProc.push({'depth': currentDepth, 'time': time});
-            };
+                console.log("Moving diver from current depth " + currentDepth + " to next ceiling of " + ceiling);
+                currentGasName = this.addDecoDepthChange(currentDepth, ceiling, currentGasName);
+            }
             if (!maintainTissues) {
                 this.resetTissues(origTissues);
             }
-            return decoProc;
+            return this.segments;
         };
 
-        plan.prototype.bestDecoGas = function(depth, maxppO2, maxEND) {
+        plan.prototype.addDecoDepthChange = function(fromDepth, toDepth, maxppO2, maxEND, currentGasName) {
+            if (typeof currentGasName == 'undefined') {
+                currentGasName = this.bestDecoGasName(fromDepth, maxppO2, maxEND);
+                if (typeof currentGasName == 'undefined') {
+                    throw "Unable to find starting gas to decompress at depth. No segments provided with bottom mix, and no deco gas operational at this depth.";
+                }
+            }
+
+            console.log("Starting depth change from " + fromDepth + " moving to " + toDepth + " with starting gas " + currentGasName);
+            while (toDepth < fromDepth) { //if ceiling is higher, move our diver up.
+                //ensure we're on the best gas
+                var betterDecoGasName = this.bestDecoGasName(fromDepth, maxppO2, maxEND);
+                if (typeof betterDecoGasName != 'undefined') {
+                    console.log("At depth " + fromDepth + " found a better deco gas " + betterDecoGasName + ". Switching to better gas.");
+                    currentGasName = betterDecoGasName;
+                }
+
+                console.log("Looking for the next best gas moving up between " + fromDepth + " and " + toDepth);
+                var ceiling = toDepth; //ceiling is toDepth, unless there's a better gas to switch to on the way up.
+                for (var nextDepth=fromDepth-1; nextDepth >= ceiling; nextDepth--) {
+                    var nextDecoGasName = this.bestDecoGasName(nextDepth);
+                    if (nextDecoGasName != currentGasName) {
+                        console.log("Found a gas " + nextDecoGasName + " to switch to at " + nextDepth + " which is lower than target ceiling of " + ceiling);
+                        ceiling = nextDepth; //Only carry us up to the point where we can use this better gas.
+                        break;
+                    }
+                }
+
+                //take us to the ceiling at 30fpm or 10 mpm (the fastest ascent rate possible.)
+                var depthdiff = fromDepth - ceiling;
+                var time = depthdiff/10;
+                console.log("Moving diver from " + fromDepth + " to " + ceiling + " on gas " + currentGasName + " over " + time + " minutes (10 meters or 30 feet per minute).")
+                this.addDepthChange(fromDepth, ceiling, currentGasName, time);
+
+                fromDepth = ceiling; //move up from-depth
+            }
+
+            return currentGasName;
+
+        }
+
+        plan.prototype.bestDecoGasName = function(depth, maxppO2, maxEND) {
+            //console.log("Finding best deco gas for depth " + depth + " with max ppO2 of " + maxppO2 + "  and max END of " + maxEND);
             //best gas is defined as: a ppO2 at depth <= maxppO2,
             // the highest ppO2 among all of these.
             // END <= 30 (equivalent narcotic depth < 30 meters)
-            for (var i=0; i < this.decoGasses.length; i++) {
-                var candidateGas = this.decoGasses[i];
-                var mod = candidateGas.modInMeters(maxppO2);
-                var end = candidateGas.equivNarcoticDepth
+            var winner;
+            var winnerName;
+            for (var gasName in this.decoGasses) {
+                var candidateGas = this.decoGasses[gasName];
+                var mod = Math.round(candidateGas.modInMeters(maxppO2, this.isFreshWater));
+                var end = Math.round(candidateGas.endInMeters(depth, this.isFreshWater));
+                //console.log("Found candidate deco gas " + gasName + ": " + (candidateGas.fO2) + "/" + (candidateGas.fHe) + " with mod " + mod + " and END " + end);
+                if (depth <= mod && end <= maxEND) {
+                    //console.log("Candidate " + gasName + " fits within MOD and END limits.");
+                    if (typeof winner == 'undefined' || //either we have no winner yet
+                        winner.fO2 < candidateGas.fO2) { //or previous winner is a lower O2
+                        //console.log("Replaced winner: " + candidateGas);
+                        winner = candidateGas;
+                        winnerName = gasName;
+                    }
+
+                }
             }
+            return winnerName;
         }
 
         plan.prototype.ndl = function (depth, gasName, gf) {
