@@ -701,15 +701,28 @@ exports['decompression'] = {
         setUp: function (done) {
             done();
         },
-        'decompression': function(test) {
+        'decompression gas switch once': function(test) {
             test.expect(0);
             var buhlmann = dive.deco.buhlmann();
             var plan = new buhlmann.plan(buhlmann.ZH16BTissues);
             plan.addBottomGas("2135", 0.21, 0.35);
             plan.addDecoGas("50%", 0.50, 0);
-            plan.addDepthChange(0, 150, "2135", 20);
-            plan.addFlat(150, "2135", 20);
-            plan.calculateDecompression();
+            plan.addDepthChange(0, dive.feetToMeters(150), "2135", 20);
+            plan.addFlat(dive.feetToMeters(150), "2135", 30);
+            console.log(plan.calculateDecompression(false, 1.2, 1.8, 1.6, 30));
+            test.done();
+        },
+
+        'decompression gas switch twice': function(test) {
+            test.expect(0);
+            var buhlmann = dive.deco.buhlmann();
+            var plan = new buhlmann.plan(buhlmann.ZH16BTissues);
+            plan.addBottomGas("2135", 0.21, 0.35);
+            plan.addDecoGas("50%", 0.50, 0);
+            plan.addDecoGas("Oxygen 100%", 1.0, 0.0);
+            plan.addDepthChange(0, dive.feetToMeters(150), "2135", 20);
+            plan.addFlat(dive.feetToMeters(150), "2135", 30);
+            console.log(plan.calculateDecompression(false, 1.2, 1.8, 1.6, 30));
             test.done();
         }
 };
