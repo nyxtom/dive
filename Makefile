@@ -4,6 +4,7 @@ JS_FILES = \
 	lib/postfix.js \
 	lib/deco/prefix.js \
 	lib/deco/buhlmann.js \
+	lib/deco/vpm.js \
 	lib/deco/postfix.js
 
 JS_COMPILER = \
