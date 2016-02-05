@@ -787,14 +787,14 @@ exports['vpm decompression'] = {
         test.expect(1);
         var vpm = dive.deco.vpm();
         var plan = new vpm.plan();
-        plan.addBottomGas("2135", 0.21, 0.35);
+        plan.addBottomGas("21/35", 0.21, 0.35);
         plan.addDecoGas("50%", 0.50, 0);
         plan.addDecoGas("Oxygen 100%", 1.0, 0.0);
-        plan.addDepthChange(0, dive.feetToMeters(150), "2135", 5);
-        plan.addFlat(dive.feetToMeters(150), "2135", 25);
+        plan.addDepthChange(0, dive.feetToMeters(150), "21/35", 5);
+        plan.addFlat(dive.feetToMeters(150), "21/35", 25);
 
         var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30);
-        //console.log(JSON.stringify(decoPlan, null, 2));
+        console.log(JSON.stringify(decoPlan, null, 2));
 
         var totalDeco = 0;
         //add total deco time
