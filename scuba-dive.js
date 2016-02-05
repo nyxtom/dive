@@ -1155,8 +1155,8 @@ $self.vpm = function() {
         }
 
         var __name__ = "__main__";
-        var ARRAY_LENGTH, program_state;
-        ARRAY_LENGTH = 16;
+        var program_state;
+        var ARRAY_LENGTH = 16;
 
         function AltitudeException() {
             AltitudeException.prototype.__init__.apply(this, arguments)
@@ -1252,6 +1252,15 @@ $self.vpm = function() {
                 throw "json_input cannot be undefined or null or empty.";
             }
 
+            var newZeroArray = function()
+            {
+                var zeroArray = [];
+                for (var i = 0; i < ARRAY_LENGTH; i++) {
+                    zeroArray.push(0.0);
+                }
+                return zeroArray;
+            }
+
             self.input_values = json_input["input"];
             self.settings_values = json_input["settings"];
             self.altitude_values = json_input["altitude"];
@@ -1288,26 +1297,26 @@ $self.vpm = function() {
             self.Altitude_of_Dive = 0;
             self.Deco_Phase_Volume_Time = 0;
             self.Surface_Interval_Time = 0;
-            self.Regenerated_Radius_He = new Array(ARRAY_LENGTH);
-            self.Regenerated_Radius_N2 = new Array(ARRAY_LENGTH);
+            self.Regenerated_Radius_He = newZeroArray();
+            self.Regenerated_Radius_N2 = newZeroArray();
             self.Mix_Change = [];
             self.Depth_Change = [];
             self.Rate_Change = [];
             self.Step_Size_Change = [];
-            self.He_Pressure_Start_of_Ascent = new Array(ARRAY_LENGTH);
-            self.N2_Pressure_Start_of_Ascent = new Array(ARRAY_LENGTH);
-            self.He_Pressure_Start_of_Deco_Zone = new Array(ARRAY_LENGTH);
-            self.N2_Pressure_Start_of_Deco_Zone = new Array(ARRAY_LENGTH);
-            self.Phase_Volume_Time = new Array(ARRAY_LENGTH);
-            self.Last_Phase_Volume_Time = new Array(ARRAY_LENGTH);
-            self.Allowable_Gradient_He = new Array(ARRAY_LENGTH);
-            self.Allowable_Gradient_N2 = new Array(ARRAY_LENGTH);
-            self.Adjusted_Crushing_Pressure_He = new Array(ARRAY_LENGTH);
-            self.Adjusted_Crushing_Pressure_N2 = new Array(ARRAY_LENGTH);
-            self.Initial_Allowable_Gradient_N2 = new Array(ARRAY_LENGTH);
-            self.Initial_Allowable_Gradient_He = new Array(ARRAY_LENGTH);
-            self.Deco_Gradient_He = new Array(ARRAY_LENGTH);
-            self.Deco_Gradient_N2 = new Array(ARRAY_LENGTH);
+            self.He_Pressure_Start_of_Ascent = newZeroArray();
+            self.N2_Pressure_Start_of_Ascent = newZeroArray();
+            self.He_Pressure_Start_of_Deco_Zone = newZeroArray();
+            self.N2_Pressure_Start_of_Deco_Zone = newZeroArray();
+            self.Phase_Volume_Time = newZeroArray();
+            self.Last_Phase_Volume_Time = newZeroArray();
+            self.Allowable_Gradient_He = newZeroArray();
+            self.Allowable_Gradient_N2 = newZeroArray();
+            self.Adjusted_Crushing_Pressure_He = newZeroArray();
+            self.Adjusted_Crushing_Pressure_N2 = newZeroArray();
+            self.Initial_Allowable_Gradient_N2 = newZeroArray();
+            self.Initial_Allowable_Gradient_He = newZeroArray();
+            self.Deco_Gradient_He = newZeroArray();
+            self.Deco_Gradient_N2 = newZeroArray();
             self.Water_Vapor_Pressure = 0;
             self.Surface_Tension_Gamma = 0;
             self.Skin_Compression_GammaC = 0;
@@ -1326,27 +1335,29 @@ $self.vpm = function() {
             self.Barometric_Pressure = 0;
             self.units_fsw = false;
             self.Units_Factor = 0;
-            self.Helium_Time_Constant = new Array(ARRAY_LENGTH);
-            self.Nitrogen_Time_Constant = new Array(ARRAY_LENGTH);
-            self.Helium_Pressure = new Array(ARRAY_LENGTH);
-            self.Nitrogen_Pressure = new Array(ARRAY_LENGTH);
-            self.Initial_Helium_Pressure = new Array(ARRAY_LENGTH);
-            self.Initial_Nitrogen_Pressure = new Array(ARRAY_LENGTH);
+            self.Helium_Time_Constant = newZeroArray();
+            self.Nitrogen_Time_Constant = newZeroArray();
+            self.Helium_Pressure = newZeroArray();
+            self.Nitrogen_Pressure = newZeroArray();
+            self.Initial_Helium_Pressure = newZeroArray();
+            self.Initial_Nitrogen_Pressure = newZeroArray();
             self.Fraction_Helium = [];
             self.Fraction_Nitrogen = [];
-            self.Initial_Critical_Radius_He = new Array(ARRAY_LENGTH);
-            self.Initial_Critical_Radius_N2 = new Array(ARRAY_LENGTH);
-            self.Adjusted_Critical_Radius_He = new Array(ARRAY_LENGTH);
-            self.Adjusted_Critical_Radius_N2 = new Array(ARRAY_LENGTH);
-            self.Max_Crushing_Pressure_He = new Array(ARRAY_LENGTH);
-            self.Max_Crushing_Pressure_N2 = new Array(ARRAY_LENGTH);
-            self.Surface_Phase_Volume_Time = new Array(ARRAY_LENGTH);
-            self.Max_Actual_Gradient = new Array(ARRAY_LENGTH);
-            self.Amb_Pressure_Onset_of_Imperm = new Array(ARRAY_LENGTH);
-            self.Gas_Tension_Onset_of_Imperm = new Array(ARRAY_LENGTH);
+            self.Initial_Critical_Radius_He = newZeroArray();
+            self.Initial_Critical_Radius_N2 = newZeroArray();
+            self.Adjusted_Critical_Radius_He = newZeroArray();
+            self.Adjusted_Critical_Radius_N2 = newZeroArray();
+            self.Max_Crushing_Pressure_He = newZeroArray();
+            self.Max_Crushing_Pressure_N2 = newZeroArray();
+            self.Surface_Phase_Volume_Time = newZeroArray();
+            self.Max_Actual_Gradient = newZeroArray();
+            self.Amb_Pressure_Onset_of_Imperm = newZeroArray();
+            self.Gas_Tension_Onset_of_Imperm = newZeroArray();
             self.Diver_Acclimatized = null;
             self.Helium_Half_Time = [1.88, 3.02, 4.72, 6.99, 10.21, 14.48, 20.53, 29.11, 41.2, 55.19, 70.69, 90.34, 115.29, 147.42, 188.24, 240.03];
             self.Nitrogen_Half_Time = [5, 8, 12.5, 18.5, 27, 38.3, 54.3, 77, 109, 146, 187, 239, 305, 390, 498, 635]
+
+            console.log(self.Helium_Pressure);
         };
         DiveState.prototype.get_json = function get_json() {
             var self = this;
@@ -1513,6 +1524,8 @@ $self.vpm = function() {
                 starting_gas_tension = self.Initial_Helium_Pressure[i] + self.Initial_Nitrogen_Pressure[i] + self.Constant_Pressure_Other_Gases;
                 starting_gradient = starting_ambient_pressure - starting_gas_tension;
                 ending_gas_tension = self.Helium_Pressure[i] + self.Nitrogen_Pressure[i] + self.Constant_Pressure_Other_Gases;
+                console.log(self.Helium_Pressure);
+                console.log("self.Helium_Pressure[i]: " + self.Helium_Pressure[i] + " self.Nitrogen_Pressure[i]: " + self.Nitrogen_Pressure[i] + " i:" + i + " starting_ambient_pressure:" + starting_ambient_pressure);
                 ending_gradient = ending_ambient_pressure - ending_gas_tension;
                 radius_onset_of_imperm_he = 1 / (gradient_onset_of_imperm_pa / (2 * (self.settings_values["Skin_Compression_GammaC"] - self.settings_values["Surface_Tension_Gamma"])) + 1 / self.Adjusted_Critical_Radius_He[i]);
                 radius_onset_of_imperm_n2 = 1 / (gradient_onset_of_imperm_pa / (2 * (self.settings_values["Skin_Compression_GammaC"] - self.settings_values["Surface_Tension_Gamma"])) + 1 / self.Adjusted_Critical_Radius_N2[i]);
@@ -2717,24 +2730,29 @@ $self.vpm = function() {
 
             "settings":{
                 "Units":"msw",
-                    "SetPoint_Is_Bar":true,
-                    "Altitude_Dive_Algorithm":"OFF",
-                    "Minimum_Deco_Stop_Time":1.0,
-                    "Critical_Radius_N2_Microns":0.8,
-                    "Critical_Radius_He_Microns":0.7,
-                    "Critical_Volume_Algorithm":"ON",
-                    "Crit_Volume_Parameter_Lambda":7500.0,
-                    "Gradient_Onset_of_Imperm_Atm":8.2,
-                    "Surface_Tension_Gamma":0.0179,
-                    "Skin_Compression_GammaC":0.257,
-                    "Regeneration_Time_Constant":20160.0,
-                    "Pressure_Other_Gases_mmHg":102.0
+                "SetPoint_Is_Bar":true,
+                "Altitude_Dive_Algorithm":"OFF",
+                "Minimum_Deco_Stop_Time":1.0,
+                "Critical_Radius_N2_Microns":0.6,
+                "Critical_Radius_He_Microns":0.5,
+                "Critical_Volume_Algorithm":"ON",
+                "Crit_Volume_Parameter_Lambda":7500.0,
+                "Gradient_Onset_of_Imperm_Atm":8.2,
+                "Surface_Tension_Gamma":0.0179,
+                "Skin_Compression_GammaC":0.257,
+                "Regeneration_Time_Constant":20160.0,
+                "Pressure_Other_Gases_mmHg":102.0
             }
         };
 
+        console.log(JSON.stringify(input));
         var vpmPlanInner = VPMDivePlan(input);
         //execute divestate
-        vpmPlanInner.main();
+        try {
+            vpmPlanInner.main();
+        } catch (e) {
+            return e;
+        }
 
         return vpmPlanInner.output_object.get_json();
     };
