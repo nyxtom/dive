@@ -2338,181 +2338,62 @@ $self.vpm = function () {
       var self = this;
       var str;
       'Adds a new ascent entry to the dive profile table';
-      self.output[self.current_dive].dive_profile.push([
-        segment_number,
-        segment_time,
-        run_time,
-        mix_number,
-        depth
-      ]);
+      self.output[self.current_dive].dive_profile.push({
+          "segmentNumber": segment_number,
+          "segmentTime": segment_time,
+          "runTime": run_time,
+          "mixNumber": mix_number,
+          "depth": depth
+      });
     };
     HtmlOutput.prototype.add_dive_profile_entry_descent = function add_dive_profile_entry_descent(segment_number, segment_time, run_time, mix_number, word, starting_depth, ending_depth, rate) {
       var self = this;
       var str;
       'Adds a new descent entry to the dive profile table';
-      self.output[self.current_dive].dive_profile.push([
-        segment_number,
-        segment_time,
-        run_time,
-        mix_number,
-        word,
-        starting_depth,
-        ending_depth,
-        rate
-      ]);
+      self.output[self.current_dive].dive_profile.push({
+          "segmentNumber": segment_number,
+          "segmentTime": segment_time,
+          "runTime": run_time,
+          "mixNumber": mix_number,
+          "word": word,
+          "startingDepth": starting_depth,
+          "endingDepth": ending_depth,
+          "rate": rate
+      });
     };
     HtmlOutput.prototype.add_decompression_profile_ascent = function add_decompression_profile_ascent(segment_number, segment_time, run_time, mix_number, deco_stop_depth, rate) {
       var self = this;
       var str;
       'Adds a new ascent entry to the decompression table';
-      self.output[self.current_dive].decompression_profile.push([
-        segment_number,
-        segment_time,
-        run_time,
-        mix_number,
-        deco_stop_depth,
-        rate
-      ]);
+      self.output[self.current_dive].decompression_profile.push({
+          "segmentNumber": segment_number,
+          "segmentTime": segment_time,
+          "runTime": run_time,
+          "mixNumber": mix_number,
+          "decoStopDepth": deco_stop_depth,
+          "rate": rate
+      });
     };
     HtmlOutput.prototype.add_decompression_profile_constant = function add_decompression_profile_constant(segment_number, segment_time, run_time, mix_number, deco_stop_depth, stop_time) {
       var self = this;
       var str;
       'Adds a new constant depth entry to the decompression table';
-      self.output[self.current_dive].decompression_profile.push([
-        segment_number,
-        segment_time,
-        run_time,
-        mix_number,
-        deco_stop_depth,
-        stop_time,
-        parseInt(run_time)
-      ]);
+      self.output[self.current_dive].decompression_profile.push({
+          "segmentNumber": segment_number,
+          "segmentTime": segment_time,
+          "runTime": run_time,
+          "mixNumber": mix_number,
+          "decoStopDepth": deco_stop_depth,
+          "stopTime": stop_time,
+      });
     };
-    HtmlOutput.prototype.to_html = function to_html(filename) {
-      var self = this;
-      if (typeof filename === 'undefined')
-        filename = null;
-      var dive, output;
-      'Export the dive output object to an HTML file or the console';
-      output = '';
-      output += self.html_header();
-      var ՐՏ_Iter5 = ՐՏ_Iterable(self.output);
-      for (var ՐՏ_Index5 = 0; ՐՏ_Index5 < ՐՏ_Iter5.length; ՐՏ_Index5++) {
-        dive = ՐՏ_Iter5[ՐՏ_Index5];
-        output += self.html_description_time_and_gasmix(dive);
-        output += self.html_dive_table(dive);
-        output += self.html_decompression_table(dive);
-      }
-      output += self.html_footer();
-      ՐՏ_print(output);
-    };
-    HtmlOutput.prototype.html_description_time_and_gasmix = function html_description_time_and_gasmix(dive) {
-      var self = this;
-      var ՐՏ_Unpack, i, gas, return_string;
-      'Return the table containing the time and gasmix';
-      return_string = '';
-      return_string += '<p>';
-      return_string += dive.desc;
-      return_string += '<br/>';
-      return_string += dive.time;
-      return_string += '<br/>';
-      return_string += 'Gasmix Summary';
-      return_string += '</p>';
-      return_string += '\n            <table border="2" >\n            <tr>\n            <th>Gasmix number</th>\n            <th>O2</th>\n            <th>He</th>\n            <th>N2</th>\n            </tr>\n            ';
-      var ՐՏ_Iter6 = ՐՏ_Iterable(enumerate(dive.gasmix));
-      for (var ՐՏ_Index6 = 0; ՐՏ_Index6 < ՐՏ_Iter6.length; ՐՏ_Index6++) {
-        ՐՏ_Unpack = ՐՏ_Iter6[ՐՏ_Index6];
-        i = ՐՏ_Unpack[0];
-        gas = ՐՏ_Unpack[1];
-        return_string += '<tr>\n            <td>%d</td>\n            <td>%5.3f</td>\n            <td>%5.3f</td>\n            <td>%5.3f</td>\n            </tr>\n            ' % [
-          i + 1,
-          gas.oxygen,
-          gas.helium,
-          gas.nitrogen
-        ];
-      }
-      return_string += '</table>';
-      return return_string;
-    };
-    HtmlOutput.prototype.html_dive_table = function html_dive_table(dive) {
-      var self = this;
-      var elem, d, return_string;
-      return_string = '';
-      return_string += '<p>Dive Profile</p>';
-      return_string += '<table border="2" >\n        <tr>\n        <th>Segment</th>\n        <th>Segment Time (min)</th>\n        <th>Run Time (min)</th>\n        <th>Gasmix Used #</th>\n        <th>Ascent or Descent</th>\n        <th>From Depth (%s)</th>\n        <th>To Depth (%s)</th>\n        <th>Rate +Dn/-Up (%s)</th>\n        <th>Constant Depth (%s)</th>\n        </tr>\n        ' % [
-        self.state_object.Units_Word1,
-        self.state_object.Units_Word1,
-        self.state_object.Units_Word2,
-        self.state_object.Units_Word1
-      ];
-      var ՐՏ_Iter7 = ՐՏ_Iterable(dive.dive_profile);
-      for (var ՐՏ_Index7 = 0; ՐՏ_Index7 < ՐՏ_Iter7.length; ՐՏ_Index7++) {
-        d = ՐՏ_Iter7[ՐՏ_Index7];
-        return_string += '<tr>';
-        var ՐՏ_Iter8 = ՐՏ_Iterable(d);
-        for (var ՐՏ_Index8 = 0; ՐՏ_Index8 < ՐՏ_Iter8.length; ՐՏ_Index8++) {
-          elem = ՐՏ_Iter8[ՐՏ_Index8];
-          return_string += '<td>%s</td>' % str(elem);
-        }
-        return_string += '</tr>';
-      }
-      return_string += '</table>';
-      return return_string;
-    };
-    HtmlOutput.prototype.html_decompression_table = function html_decompression_table(dive) {
-      var self = this;
-      var elem, d, return_string;
-      return_string = '';
-      return_string += '<p>';
-      return_string += 'DECOMPRESSION PROFILE';
-      return_string += '<br/>';
-      return_string += 'Leading compartment enters the decompression zone at, %.1f %s' % [
-        self.state_object.Depth_Start_of_Deco_Zone,
-        self.state_object.Units_Word1
-      ];
-      return_string += '<br/>';
-      return_string += 'Deepest possible decompression stop is %.1f %s' % [
-        self.state_object.Deepest_Possible_Stop_Depth,
-        self.state_object.Units_Word1
-      ];
-      return_string += '<br/>';
-      return_string += '</p>';
-      return_string += '<table border="2">\n        <tr>\n        <th>Segment #</th>\n        <th>Segment Time (min)</th>\n        <th>Run Time(min)</th>\n        <th>Gasmix Used #</th>\n        <th>Ascent to (%s)</th>\n        <th>Ascent Rate(%s)</th>\n        <th>Deco Stop(%s)</th>\n        <th>Stop Time (min)</th>\n        <th>Run Time(min)</th>\n        </tr>\n        ' % [
-        self.state_object.Units_Word1,
-        self.state_object.Units_Word2,
-        self.state_object.Units_Word1
-      ];
-      var ՐՏ_Iter9 = ՐՏ_Iterable(dive.decompression_profile);
-      for (var ՐՏ_Index9 = 0; ՐՏ_Index9 < ՐՏ_Iter9.length; ՐՏ_Index9++) {
-        d = ՐՏ_Iter9[ՐՏ_Index9];
-        return_string += '<tr>';
-        var ՐՏ_Iter10 = ՐՏ_Iterable(d);
-        for (var ՐՏ_Index10 = 0; ՐՏ_Index10 < ՐՏ_Iter10.length; ՐՏ_Index10++) {
-          elem = ՐՏ_Iter10[ՐՏ_Index10];
-          return_string += '<td>%s</td>' % str(elem);
-        }
-        return_string += '</tr>';
-      }
-      return_string += '</table>';
-      return return_string;
-    };
-    HtmlOutput.prototype.html_header = function html_header() {
-      var self = this;
-      var header;
-      'Return the header of the html output';
-      header = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n        <html xmlns="http://www.w3.org/1999/xhtml"\n        lang="en" xml:lang="en">\n        <head>\n        <meta http-equiv="content-type" content="text/html;charset=utf-8" />\n        <title>VPMB Dive chart</title>\n        <style type="text/css">\n\n        html { font-family: Times, serif; font-size: 12pt; }\n        .title  { text-align: center; }\n        .todo   { color: red; }\n        .done   { color: green; }\n        .tag    { background-color:lightblue; font-weight:normal }\n        .target { }\n        .timestamp { color: grey }\n        .timestamp-kwd { color: CadetBlue }\n        p.verse { margin-left: 3% }\n        pre {\n          border: 1pt solid #AEBDCC;\n          background-color: #F3F5F7;\n          padding: 5pt;\n          font-family: courier, monospace;\n          font-size: 90%;\n          overflow:auto;\n        }\n        table { border-collapse:collapse;  }\n        td, th { vertical-align: top; }\n        dt { font-weight: bold; }\n        div.figure { padding: 0.5em; }\n        div.figure p { text-align: center; }\n        .linenr { font-size:smaller }\n        .code-highlighted {background-color:#ffff00;}\n\n        </style>\n        </head><body>\n        ';
-      return header;
-    };
-    HtmlOutput.prototype.html_footer = function html_footer() {
-      var self = this;
-      'Return the html footer';
-      return '</body></html>';
-    };
+
     HtmlOutput.prototype.get_json = function get_json() {
       var self = this;
       'Return the output JSON';
       return self.output;
     };
+
     function schreiner_equation(initial_inspired_gas_pressure, rate_change_insp_gas_pressure, interval_time, gas_time_constant, initial_gas_pressure) {
       'Function for ascent and descent gas loading calculations';
         //console.log("initial_inspired_gas_pressure: " + initial_inspired_gas_pressure + " rate_change_insp_gas_pressure: " + rate_change_insp_gas_pressure + " interval_time: " + interval_time + " gas_time_constant: " + gas_time_constant + " initial_gas_pressure: " + initial_gas_pressure);
@@ -2689,6 +2570,14 @@ $self.vpm = function () {
           return mix;
       }
 
+      var getLabelForGasMixNumber = function(mix) {
+        for (var gasName in label_to_gasmix) {
+            if (label_to_gasmix[gasName] == mix) {
+                return gasName
+            }
+        }
+        throw "No gasName found for mix: " + mix +". Known mixes: " + JSON.stringify(label_to_gasmix);
+      }
     var profile_codes = [];
     var total_runtime = 0;
     //create dive profiles for each segment
@@ -2724,15 +2613,15 @@ $self.vpm = function () {
       'setpoint': 0  //not on a CCR
     });
     //now add steps for each deco gas
-    for (var index in this.decoGasses) {
-      var decoGas = this.decoGasses[index];
+    for (var gasName in this.decoGasses) {
+      var decoGas = this.decoGasses[gasName];
       var mod = Math.round(decoGas.modInMeters(maxppO2, this.isFreshWater));
       var ead = Math.round(decoGas.eadInMeters(maxEND, this.isFreshWater));
       //pick gas switch depth as lesser of the two
       var switchDepth = mod < ead ? mod : ead;
       ascent_summary.push({
         'starting_depth': switchDepth,
-        'gasmix':getGasMixNumerForLabel(segment.gasName),
+        'gasmix':getGasMixNumerForLabel(gasName),
         'rate': -10,
         //meters
         'step_size': 3,
@@ -2778,6 +2667,8 @@ $self.vpm = function () {
         'Pressure_Other_Gases_mmHg': 102
       }
     };
+
+      //console.log(JSON.stringify(input));
     var vpmPlanInner = VPMDivePlan(input);
     //execute divestate
     try {
@@ -2785,7 +2676,41 @@ $self.vpm = function () {
     } catch (e) {
       return e;
     }
-    return vpmPlanInner.output_object.get_json();
+    var outputjson = vpmPlanInner.output_object.get_json()[0];
+
+    //wrangle output to conform to buhlmann-output - which is simply a series of
+      //steps including descent and deco profiles all combined together.
+      //and gasmix (the number), is instead referred to by the gas's registered name.
+      //console.log(JSON.stringify(outputjson));
+      var decoPlan = [];
+      for (var index in outputjson.dive_profile) {
+          var seg = outputjson.dive_profile[index];
+          if (typeof seg.depth != 'undefined') {
+              var newseg = dive.segment(seg.depth, seg.depth, getLabelForGasMixNumber(seg.mixNumber), seg.segmentTime)
+              //console.log(newseg);
+            decoPlan.push(newseg);
+          } else {
+              var newseg = dive.segment(seg.startingDepth, seg.endingDepth, getLabelForGasMixNumber(seg.mixNumber), seg.segmentTime)
+              //console.log(newseg);
+              decoPlan.push(newseg);
+          }
+      }
+
+
+      for (var index in outputjson.decompression_profile) {
+          var seg = outputjson.decompression_profile[index];
+          if (typeof seg.rate != 'undefined') {
+              var newseg = dive.segment(seg.decoStopDepth - (seg.segmentTime * seg.rate), seg.decoStopDepth, getLabelForGasMixNumber(seg.mixNumber), seg.segmentTime)
+              //console.log(newseg);
+              decoPlan.push(newseg);
+          } else {
+              var newseg = dive.segment(seg.decoStopDepth, seg.decoStopDepth, getLabelForGasMixNumber(seg.mixNumber), seg.segmentTime)
+              //console.log(newseg);
+              decoPlan.push(newseg);
+          }
+      }
+
+      return decoPlan;
   };
   plan.prototype.bestDecoGasName = function (depth, maxppO2, maxEND) {
     //console.log("Finding best deco gas for depth " + depth + " with max ppO2 of " + maxppO2 + "  and max END of " + maxEND);

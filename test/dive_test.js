@@ -747,7 +747,7 @@ exports['buhlmann decompression'] = {
 
             totalDeco = Math.round(totalDeco);
             test.equals(30, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
-            console.log("Total Deco: " + totalDeco);
+            //console.log("Total Deco: " + totalDeco);
             test.done();
         }
 };
@@ -767,20 +767,19 @@ exports['vpm decompression'] = {
         plan.addDepthChange(0, dive.feetToMeters(150), "2135", 5);
         plan.addFlat(dive.feetToMeters(150), "2135", 25);
         var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30);
-        console.log(decoPlan);
-        /*
+        //console.log(JSON.stringify(decoPlan, null, 2));
         var totalDeco = 0;
         //add total deco time
         for (var i=0; i<decoPlan.length; i++) {
             var decoStage = decoPlan[i];
+            //console.log("Index: " + i + " stage: " + decoStage.time);
             if (decoStage.gasName == "50%") { //everything above 70 feet is "deco" time
                 totalDeco = totalDeco + decoStage.time;
             }
         }
         totalDeco = Math.round(totalDeco);
-        test.equals(38, totalDeco, '38 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
+        test.equals(27, totalDeco, '38 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
         //console.log("Total Deco: " + totalDeco);
-        */
         test.done();
     },
 
@@ -795,9 +794,8 @@ exports['vpm decompression'] = {
         plan.addFlat(dive.feetToMeters(150), "2135", 25);
 
         var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30);
-        console.log(JSON.stringify(decoPlan, null, 2));
+        //console.log(JSON.stringify(decoPlan, null, 2));
 
-        /*
         var totalDeco = 0;
         //add total deco time
         for (var i=0; i<decoPlan.length; i++) {
@@ -808,9 +806,8 @@ exports['vpm decompression'] = {
         }
 
         totalDeco = Math.round(totalDeco);
-        test.equals(30, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
-        console.log("Total Deco: " + totalDeco);
-        */
+        test.equals(22, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
+        //console.log("Total Deco: " + totalDeco);
         test.done();
     }
 };
