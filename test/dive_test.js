@@ -758,6 +758,7 @@ exports['vpm decompression'] = {
     setUp: function (done) {
         done();
     },
+
     'decompression gas switch once': function(test) {
         test.expect(1);
         var vpm = dive.deco.vpm();
@@ -778,7 +779,7 @@ exports['vpm decompression'] = {
             }
         }
         totalDeco = Math.round(totalDeco);
-        test.equals(27, totalDeco, '38 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
+        test.equals(25, totalDeco, '38 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
         //console.log("Total Deco: " + totalDeco);
         test.done();
     },
@@ -794,7 +795,7 @@ exports['vpm decompression'] = {
         plan.addFlat(dive.feetToMeters(150), "21/35", 25);
 
         var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30);
-        console.log(JSON.stringify(decoPlan, null, 2));
+        //console.log(JSON.stringify(decoPlan, null, 2));
 
         var totalDeco = 0;
         //add total deco time
@@ -806,7 +807,41 @@ exports['vpm decompression'] = {
         }
 
         totalDeco = Math.round(totalDeco);
-        test.equals(22, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
+        test.equals(20, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
+        //console.log("Total Deco: " + totalDeco);
+        test.done();
+    },
+
+    'weird profile': function(test) {
+        test.expect(1);
+        var vpm = dive.deco.vpm();
+        var plan = new vpm.plan();
+        plan.addBottomGas("32%", 0.32, 0);
+        plan.addBottomGas("30/30", 0.3, 0.3);
+        plan.addBottomGas("21/35", 0.21, 0.35);
+        plan.addBottomGas("18/45", 0.18, 0.45);
+        plan.addBottomGas("15/55", 0.15, 0.55);
+        plan.addBottomGas("10/70", 0.1, 0.7);
+        plan.addDecoGas("Oxygen 100%", 1, 0);
+        plan.addDecoGas("50%", 0.5, 0);
+        plan.addDecoGas("21/35", 0.21, 0.35);
+        plan.addDepthChange(15, 43, "21/35", 15);
+        plan.addDepthChange(43, 43, "21/35", 15);
+        plan.addDepthChange(43, 21, "21/35", 3);
+        var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30);
+        //console.log(JSON.stringify(decoPlan, null, 2));
+
+        var totalDeco = 0;
+        //add total deco time
+        for (var i=0; i<decoPlan.length; i++) {
+            var decoStage = decoPlan[i];
+            if (decoStage.gasName == "50%" || decoStage.gasName == "Oxygen 100%") { //everything above 70 feet is "deco" time
+                totalDeco = totalDeco + decoStage.time;
+            }
+        }
+
+        totalDeco = Math.round(totalDeco);
+        test.equals(15, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
         //console.log("Total Deco: " + totalDeco);
         test.done();
     }
