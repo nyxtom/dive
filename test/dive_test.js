@@ -597,7 +597,6 @@ exports['buhlmannequations'] = {
             // for 1 minute time
             // for a tissue with half-time of 1 minute
             for (var time = 1; time <= 10; time++) {
-                var gasRate = targetGasPressure/time;
                 var slopeLoad = dive.schreinerEquation(0, targetGasPressure, time, halfTime, 0);
                 var flatLoad = dive.instantaneousEquation(0, targetGasPressure, time, halfTime)
                 var diff = Math.abs(slopeLoad-flatLoad)
@@ -606,7 +605,8 @@ exports['buhlmannequations'] = {
             }
         }
         test.done();
-    }
+    },
+
 };
 
 exports['buhlmannplan'] = {
@@ -719,7 +719,7 @@ exports['buhlmann decompression'] = {
                 }
             }
             totalDeco = Math.round(totalDeco);
-            test.equals(38, totalDeco, '38 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
+            test.equals(33, totalDeco, '33 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
             //console.log("Total Deco: " + totalDeco);
             test.done();
         },
@@ -746,7 +746,7 @@ exports['buhlmann decompression'] = {
             }
 
             totalDeco = Math.round(totalDeco);
-            test.equals(30, totalDeco, '30 minutes for a 30-minute square profile to 150 feet sounds about right.')
+            test.equals(26, totalDeco, '26 minutes for a 30-minute square profile to 150 feet sounds about right (when using 50% and O2 for deco.)')
             //console.log("Total Deco: " + totalDeco);
             test.done();
         }
