@@ -607,6 +607,30 @@ exports['buhlmannequations'] = {
         test.done();
     },
 
+
+    'schreiner equation add large vs small segments': function (test) {
+        test.expect(17);
+        var buhlmann = dive.deco.buhlmann();
+        var newPlanShort = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlanShort.addBottomGas("air", 0.21, 0.0);
+        //add 30 one-minute segments
+        for (var i=1; i <= 30; i++) {
+            newPlanShort.addFlat(30, "air", 1);
+        }
+
+        var newPlanLong = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlanLong.addBottomGas("air", 0.21, 0.0);
+        //add one 30-minute segment
+        newPlanLong.addFlat(30, "air", 30);
+
+        //compare tissue loading of both
+        for (var i=0; i < newPlanLong.tissues.length; i++) {
+            //console.log("Long tissue:" + newPlanLong.tissues[i].pTotal + " short tissue: " + newPlanShort.tissues[i].pTotal);
+            test.ok(Math.abs(newPlanLong.tissues[i].pTotal - newPlanShort.tissues[i].pTotal) < 0.0001, 'Tissue loading must be equal for short 1-minute segments or one long segment.');
+        }
+
+        test.done();
+    },
 };
 
 exports['buhlmannplan'] = {
@@ -626,7 +650,7 @@ exports['buhlmannplan'] = {
         test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
-    
+
     'ndl for air': function (test) {
         //Compare PADI DSAT table for reference:http://www.divetalking.com/wp-content/uploads/2009/11/AIR-RDP1.jpg
         test.expect(12);
