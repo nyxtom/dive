@@ -626,43 +626,27 @@ exports['buhlmannplan'] = {
         test.equals(3, newPlan.getCeiling(1.5), 'given the various depth changes, the ceiling should be at 3 meters in fresh water');
         test.done();
     },
-
-    'ndl rule of 130 for 32 percent': function (test) {
-        test.expect(5);
-        var buhlmann = dive.deco.buhlmann();
-        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
-        var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
-        newPlan.addBottomGas("32%", 0.32, 0.0);
-        //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        for (var i = 100; i > 50; i -= 10) {
-            var ndlTime = newPlan.ndl(dive.feetToMeters(i), "32%", gradientFactor);
-            var closeTo130 = ndlTime + i;
-            test.ok(120 <= closeTo130 && closeTo130 <= 140, 'The depth + time should be within +/- 10 of 130');
-            //console.log("Depth:" + i + " Time:" + ndlTime + " Total:" + closeTo130);
-        }
-        test.done();
-    },
-
+    
     'ndl for air': function (test) {
         //Compare PADI DSAT table for reference:http://www.divetalking.com/wp-content/uploads/2009/11/AIR-RDP1.jpg
         test.expect(12);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
         newPlan.addBottomGas("air", 0.21, 0.0);
-        var gradientFactor = 1.5; //This was choosen to closely match PADI dive tables.
+        var gradientFactor = 1.3; //This was choosen to closely match PADI dive tables.
         //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        test.equals(8, newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
-        test.equals(9, newPlan.ndl(dive.feetToMeters(130), "air", gradientFactor), "NDL for 130 feet should be close to  9 minutes");
-        test.equals(10, newPlan.ndl(dive.feetToMeters(120), "air", gradientFactor), "NDL for 120 feet should be close to 12 minutes");
-        test.equals(12, newPlan.ndl(dive.feetToMeters(110), "air", gradientFactor), "NDL for 110 feet should be close to 15 minutes");
-        test.equals(15, newPlan.ndl(dive.feetToMeters(100), "air", gradientFactor), "NDL for 100 feet should be close to 19 minutes");
-        test.equals(18, newPlan.ndl(dive.feetToMeters(90), "air", gradientFactor), "NDL for 90 feet should be close to 24 minutes");
-        test.equals(24, newPlan.ndl(dive.feetToMeters(80), "air", gradientFactor), "NDL for 80 feet should be close to 29 minutes");
-        test.equals(33, newPlan.ndl(dive.feetToMeters(70), "air", gradientFactor), "NDL for 70 feet should be close to 38 minutes");
-        test.equals(45, newPlan.ndl(dive.feetToMeters(60), "air", gradientFactor), "NDL for 60 feet should be close to 54 minutes");
-        test.equals(67, newPlan.ndl(dive.feetToMeters(50), "air", gradientFactor), "NDL for 50 feet should be close to 75 minutes");
-        test.equals(120, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
-        test.equals(179, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
+        test.equals(9, newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
+        test.equals(10, newPlan.ndl(dive.feetToMeters(130), "air", gradientFactor), "NDL for 130 feet should be close to  9 minutes");
+        test.equals(12, newPlan.ndl(dive.feetToMeters(120), "air", gradientFactor), "NDL for 120 feet should be close to 12 minutes");
+        test.equals(13, newPlan.ndl(dive.feetToMeters(110), "air", gradientFactor), "NDL for 110 feet should be close to 15 minutes");
+        test.equals(16, newPlan.ndl(dive.feetToMeters(100), "air", gradientFactor), "NDL for 100 feet should be close to 19 minutes");
+        test.equals(20, newPlan.ndl(dive.feetToMeters(90), "air", gradientFactor), "NDL for 90 feet should be close to 24 minutes");
+        test.equals(26, newPlan.ndl(dive.feetToMeters(80), "air", gradientFactor), "NDL for 80 feet should be close to 29 minutes");
+        test.equals(35, newPlan.ndl(dive.feetToMeters(70), "air", gradientFactor), "NDL for 70 feet should be close to 38 minutes");
+        test.equals(51, newPlan.ndl(dive.feetToMeters(60), "air", gradientFactor), "NDL for 60 feet should be close to 54 minutes");
+        test.equals(72, newPlan.ndl(dive.feetToMeters(50), "air", gradientFactor), "NDL for 50 feet should be close to 75 minutes");
+        test.equals(119, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
+        test.equals(170, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
         test.done();
     },
 
