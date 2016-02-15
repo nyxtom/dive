@@ -631,6 +631,29 @@ exports['buhlmannequations'] = {
 
         test.done();
     },
+
+    'schreiner equation negative rate (ascent)': function (test) {
+        test.expect(17);
+        var buhlmann = dive.deco.buhlmann();
+        var continuousAscentPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        continuousAscentPlan.addBottomGas("air", 0.21, 0.0);
+        continuousAscentPlan.addFlat(30, "air", 30);
+        continuousAscentPlan.addDepthChange(30, 10, "air", 2);
+
+        var discreteAscentPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        discreteAscentPlan.addBottomGas("air", 0.21, 0.0);
+        discreteAscentPlan.addFlat(30, "air", 30);
+        discreteAscentPlan.addFlat(20, "air", 2);
+
+        //compare tissue loading of both
+        for (var i=0; i < continuousAscentPlan.tissues.length; i++) {
+            var tissueDiff = Math.abs(continuousAscentPlan.tissues[i].pTotal - discreteAscentPlan.tissues[i].pTotal)
+            //console.log("Long tissue:" + newPlanLong.tissues[i].pTotal + " short tissue: " + newPlanShort.tissues[i].pTotal);
+            test.ok(tissueDiff < 0.1, 'Tissue loading must be similar for a discrete 2-minute stop at 20 meters, or a continuous ascent with avg depth of 20 meters. Difference found: ' + tissueDiff);
+        }
+
+        test.done();
+    },
 };
 
 exports['buhlmannplan'] = {
@@ -753,7 +776,7 @@ exports['buhlmann decompression'] = {
                 }
             }
             totalDeco = Math.round(totalDeco);
-            test.equals(33, totalDeco, '33 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
+            test.equals(30, totalDeco, '33 minutes for a 30-minute square profile to 150 feet sounds about right (if a little conservative.)')
             //console.log("Total Deco: " + totalDeco);
             test.done();
         },
@@ -780,7 +803,7 @@ exports['buhlmann decompression'] = {
             }
 
             totalDeco = Math.round(totalDeco);
-            test.equals(26, totalDeco, '26 minutes for a 30-minute square profile to 150 feet sounds about right (when using 50% and O2 for deco.)')
+            test.equals(24, totalDeco, '26 minutes for a 30-minute square profile to 150 feet sounds about right (when using 50% and O2 for deco.)')
             //console.log("Total Deco: " + totalDeco);
             test.done();
         }
