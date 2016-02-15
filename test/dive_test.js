@@ -657,25 +657,51 @@ exports['buhlmannplan'] = {
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
         newPlan.addBottomGas("air", 0.21, 0.0);
-        var gradientFactor = 1.3; //This was choosen to closely match PADI dive tables.
+        var gradientFactor = 1.0; //This was choosen to closely match PADI dive tables.
         //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
-        test.equals(9, newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
-        test.equals(10, newPlan.ndl(dive.feetToMeters(130), "air", gradientFactor), "NDL for 130 feet should be close to  9 minutes");
-        test.equals(12, newPlan.ndl(dive.feetToMeters(120), "air", gradientFactor), "NDL for 120 feet should be close to 12 minutes");
+        test.equals(8, newPlan.ndl(dive.feetToMeters(140), "air", gradientFactor), "NDL for 140 feet should be close to 7 minutes");
+        test.equals(9, newPlan.ndl(dive.feetToMeters(130), "air", gradientFactor), "NDL for 130 feet should be close to  9 minutes");
+        test.equals(11, newPlan.ndl(dive.feetToMeters(120), "air", gradientFactor), "NDL for 120 feet should be close to 12 minutes");
         test.equals(13, newPlan.ndl(dive.feetToMeters(110), "air", gradientFactor), "NDL for 110 feet should be close to 15 minutes");
         test.equals(16, newPlan.ndl(dive.feetToMeters(100), "air", gradientFactor), "NDL for 100 feet should be close to 19 minutes");
         test.equals(20, newPlan.ndl(dive.feetToMeters(90), "air", gradientFactor), "NDL for 90 feet should be close to 24 minutes");
-        test.equals(26, newPlan.ndl(dive.feetToMeters(80), "air", gradientFactor), "NDL for 80 feet should be close to 29 minutes");
-        test.equals(35, newPlan.ndl(dive.feetToMeters(70), "air", gradientFactor), "NDL for 70 feet should be close to 38 minutes");
-        test.equals(51, newPlan.ndl(dive.feetToMeters(60), "air", gradientFactor), "NDL for 60 feet should be close to 54 minutes");
-        test.equals(72, newPlan.ndl(dive.feetToMeters(50), "air", gradientFactor), "NDL for 50 feet should be close to 75 minutes");
-        test.equals(119, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
-        test.equals(170, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
+        test.equals(28, newPlan.ndl(dive.feetToMeters(80), "air", gradientFactor), "NDL for 80 feet should be close to 29 minutes");
+        test.equals(41, newPlan.ndl(dive.feetToMeters(70), "air", gradientFactor), "NDL for 70 feet should be close to 38 minutes");
+        test.equals(64, newPlan.ndl(dive.feetToMeters(60), "air", gradientFactor), "NDL for 60 feet should be close to 54 minutes");
+        test.equals(102, newPlan.ndl(dive.feetToMeters(50), "air", gradientFactor), "NDL for 50 feet should be close to 75 minutes");
+        test.equals(223, newPlan.ndl(dive.feetToMeters(40), "air", gradientFactor), "NDL for 40 feet should be close to 129 minutes");
+        test.equals(409, newPlan.ndl(dive.feetToMeters(35), "air", gradientFactor), "NDL for 35 feet should be close to 188 minutes");
         test.done();
     },
 
-    'best deco gas':
-        function(test) {
+    'ceiling at ndl':  function (test) {
+        test.expect(2);
+
+        var buhlmann = dive.deco.buhlmann();
+        var gradientFactor = 1.0; //This was choosen to closely match PADI dive tables.
+
+        //we got our NDL
+        var ndlPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        ndlPlan.addBottomGas("air", 0.21, 0.0);
+        //console.log("Ceiling:" + newPlan.getCeiling(30, 0.21, 0.0, 0.8));
+        var ndl = ndlPlan.ndl(dive.feetToMeters(140), "air", gradientFactor);
+
+        var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
+        newPlan.addBottomGas("air", 0.21, 0.0);
+        newPlan.addFlat(dive.feetToMeters(140), "air", ndl);
+
+        test.ok(newPlan.getCeiling(gradientFactor) == 0, 'Ceiling at exact NDL should be equal to zero.');
+
+        //now cross that NDL
+        newPlan.addFlat(dive.feetToMeters(140), "air", 1);
+
+        //ceiling should be greater than 0
+        test.ok(newPlan.getCeiling(gradientFactor) > 0, 'Ceiling past NDL must be greater than zero');
+
+        test.done();
+    },
+
+    'best deco gas': function(test) {
         test.expect(5);
         var buhlmann = dive.deco.buhlmann();
         var newPlan = new buhlmann.plan(buhlmann.ZH16BTissues);
