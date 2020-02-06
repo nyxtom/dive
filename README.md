@@ -100,7 +100,7 @@ newPlan.addBottomGas("2135", 0.21, 0.35);
 newPlan.addDecoGas("50%", 0.5, 0.0);
 newPlan.addDepthChange(0, 50, "2135", 5);
 newPlan.addFlat(50, "2135", 25);
-var decoPlan = plan.calculateDecompression(false, 0.2, 0.8, 1.6, 30); //gradientFactorLow = 0.2, gradientFactorHigh=0.8, deco ppO2 = 1.6, and max END allowed: 30 meters.
+var decoPlan = newPlan.calculateDecompression(false, 0.2, 0.8, 1.6, 30); //gradientFactorLow = 0.2, gradientFactorHigh=0.8, deco ppO2 = 1.6, and max END allowed: 30 meters.
 
 //No-Deco limit for a gas at a depth
 var buhlmann = dive.deco.buhlmann();
